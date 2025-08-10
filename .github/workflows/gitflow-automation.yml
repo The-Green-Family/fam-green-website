@@ -1,0 +1,169 @@
+name: Gitflow Automation
+
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - main
+
+jobs:
+  gitflow-automation:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: read
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Get current version from package.json
+        id: get_version
+        run: |
+          VERSION=$(jq -r '.version' package.json)
+          echo "current_version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Current version: $VERSION"
+
+      - name: Get previous tag for changelog
+        id: previous_tag
+        run: |
+          # Get the most recent tag before current commit
+          PREV_TAG=$(git tag --sort=-version:refname --merged HEAD | head -n 1)
+          if [ -z "$PREV_TAG" ]; then
+            echo "previous_tag=" >> $GITHUB_OUTPUT
+            echo "No previous tag found, will use full history"
+          else
+            echo "previous_tag=$PREV_TAG" >> $GITHUB_OUTPUT
+            echo "Previous tag: $PREV_TAG"
+          fi
+
+      - name: Create and push tag
+        run: |
+          git tag -a "v${{ steps.get_version.outputs.current_version }}" -m "Release version ${{ steps.get_version.outputs.current_version }}"
+          git push origin "v${{ steps.get_version.outputs.current_version }}"
+
+      - name: Calculate next version
+        id: next_version
+        run: |
+          CURRENT="${{ steps.get_version.outputs.current_version }}"
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT"
+          NEXT_PATCH=$((PATCH + 1))
+          NEXT_VERSION="$MAJOR.$MINOR.$NEXT_PATCH"
+          echo "next_version=$NEXT_VERSION" >> $GITHUB_OUTPUT
+          echo "Next version will be: $NEXT_VERSION"
+
+      - name: Create version bump branch and prepare changes
+        run: |
+          git fetch origin develop
+          git checkout develop
+          git pull origin develop
+          
+          BRANCH_NAME="feature/version-bump-to-${{ steps.next_version.outputs.next_version }}"
+          git checkout -b "$BRANCH_NAME"
+          echo "branch_name=$BRANCH_NAME" >> $GITHUB_ENV
+          
+          git merge origin/main --no-edit -m "Merge main into develop after release ${{ steps.get_version.outputs.current_version }}"
+          
+          jq --arg version "${{ steps.next_version.outputs.next_version }}" '.version = $version' package.json > package.json.tmp
+          mv package.json.tmp package.json
+          
+          git add package.json
+          git commit -m "Bump version to ${{ steps.next_version.outputs.next_version }}"
+          
+          git push origin "$BRANCH_NAME"
+
+      - name: Generate changelog for release
+        id: changelog
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const previousTag = '${{ steps.previous_tag.outputs.previous_tag }}';
+            const currentTag = 'v${{ steps.get_version.outputs.current_version }}';
+            
+            let query;
+            if (previousTag && previousTag !== '') {
+              // Get PRs merged since the last tag
+              query = `repo:${context.repo.owner}/${context.repo.repo} is:pr is:merged merged:>=${previousTag}`;
+            } else {
+              // Get all merged PRs (limited to 100)
+              query = `repo:${context.repo.owner}/${context.repo.repo} is:pr is:merged`;
+            }
+            
+            const { data: prs } = await github.rest.search.issuesAndPullRequests({
+              q: query,
+              sort: 'updated',
+              order: 'desc',
+              per_page: 100
+            });
+            
+            let changelog = '';
+            if (prs.items.length === 0) {
+              changelog = 'No pull requests found since the last release.';
+            } else {
+              changelog = prs.items
+                .map(pr => `- ${pr.title} (#${pr.number}) by @${pr.user.login}`)
+                .join('\n');
+            }
+            
+            // Set output for use in next step
+            const fs = require('fs');
+            fs.writeFileSync(process.env.GITHUB_ENV, `CHANGELOG<<EOF\n${changelog}\nEOF\n`, { flag: 'a' });
+            
+            return changelog;
+
+      - name: Create GitHub Release
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const release = await github.rest.repos.createRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              tag_name: 'v${{ steps.get_version.outputs.current_version }}',
+              name: 'Release v${{ steps.get_version.outputs.current_version }}',
+              body: `## What's Changed\n\n${process.env.CHANGELOG}\n\n${'${{ steps.previous_tag.outputs.previous_tag }}' ? '**Full Changelog**: https://github.com/' + context.repo.owner + '/' + context.repo.repo + '/compare/${{ steps.previous_tag.outputs.previous_tag }}...v${{ steps.get_version.outputs.current_version }}' : '**First Release**'}`,
+              draft: false,
+              prerelease: false
+            });
+            
+            console.log(`Created release: ${release.data.html_url}`);
+
+      - name: Create Pull Request for version bump
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: pullRequest } = await github.rest.pulls.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `🔖 Bump version to ${{ steps.next_version.outputs.next_version }}`,
+              head: '${{ env.branch_name }}',
+              base: 'develop',
+              body: `
+                ## Version Bump
+                
+                This PR automatically bumps the version from \`${{ steps.get_version.outputs.current_version }}\` to \`${{ steps.next_version.outputs.next_version }}\` following the merge of PR #${{ github.event.pull_request.number }} into main.
+                
+                ### Changes
+                - ✅ Tagged main branch with \`v${{ steps.get_version.outputs.current_version }}\`
+                - ✅ Merged main back into develop
+                - ✅ Updated package.json version to \`${{ steps.next_version.outputs.next_version }}\`
+                
+                ### Next Steps
+                - Review and merge this PR to complete the gitflow cycle
+                - Continue development on feature branches from the updated develop branch
+                
+                ---
+                🤖 *This PR was created automatically by the Gitflow Automation workflow*
+              `
+            });
+            
+            console.log(`Created PR #${pullRequest.number}: ${pullRequest.title}`);
