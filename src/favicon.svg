@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- Tree trunk - shorter -->
+  <rect x="14" y="21" width="4" height="9" fill="#8B4513" rx="0.5"/>
+  
+  <!-- Oak tree crown - taller and properly covering trunk -->
+  <circle cx="16" cy="13" r="7" fill="#228B22"/>
+  <circle cx="11" cy="17" r="5" fill="#228B22"/>
+  <circle cx="21" cy="17" r="5" fill="#228B22"/>
+  <circle cx="13" cy="8" r="4" fill="#228B22"/>
+  <circle cx="19" cy="8" r="4" fill="#228B22"/>
+  <circle cx="16" cy="6" r="3.5" fill="#228B22"/>
+  <circle cx="16" cy="20" r="4" fill="#228B22"/>
+  
+  <!-- Lighter highlights -->
+  <circle cx="14" cy="10" r="2" fill="#32CD32"/>
+  <circle cx="18" cy="11" r="1.5" fill="#32CD32"/>
+</svg>
