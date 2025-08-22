@@ -6,7 +6,9 @@
   "scripts": {
     "build": "./build.sh",
     "dev": "cd src && python3 -m http.server 8000",
-    "serve": "cd dist && python3 -m http.server 8000"
+    "serve": "cd dist && python3 -m http.server 8000",
+    "docs": "node generate-docs.js",
+    "docs:watch": "nodemon -w src/main.js -x \"npm run docs\""
   },
   "devDependencies": {
     "clean-css-cli": "^5.6.3",

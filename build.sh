@@ -48,6 +48,10 @@ $HTML_MINIFIER \
 echo "🎨 Minifying CSS..."
 $CLEANCSS -o dist/main.css src/main.css
 
+# Generate documentation
+echo "📚 Generating API documentation..."
+node generate-docs.js
+
 # Minify JavaScript
 echo "⚡ Minifying JavaScript..."
 $TERSER src/main.js \
