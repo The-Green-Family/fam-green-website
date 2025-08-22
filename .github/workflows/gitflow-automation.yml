@@ -138,9 +138,41 @@ jobs:
             if (prs.items.length === 0) {
               changelog = 'No pull requests found since the last release.';
             } else {
-              changelog = prs.items
-                .map(pr => `- ${pr.title} (#${pr.number}) by @${pr.user.login}`)
-                .join('\n');
+              // Filter and deduplicate PRs
+              const filteredPrs = prs.items.filter(pr => {
+                // Skip version bump PRs created by automation
+                if (pr.user.login === 'github-actions[bot]' && pr.title.includes('Bump version')) {
+                  return false;
+                }
+                
+                // Skip PRs with version bump pattern in title
+                if (pr.title.match(/🔖\s*Bump version|bump version/i)) {
+                  return false;
+                }
+                
+                return true;
+              });
+              
+              // Group by feature title to remove duplicates (feature->develop, develop->main)
+              const seenTitles = new Set();
+              const uniquePrs = filteredPrs.filter(pr => {
+                // Extract base title without branch info
+                const baseTitle = pr.title.replace(/\s*\(.*?\)$/, '').trim();
+                
+                if (seenTitles.has(baseTitle)) {
+                  return false;
+                }
+                seenTitles.add(baseTitle);
+                return true;
+              });
+              
+              if (uniquePrs.length === 0) {
+                changelog = 'No significant changes since the last release.';
+              } else {
+                changelog = uniquePrs
+                  .map(pr => `- ${pr.title} (#${pr.number}) by @${pr.user.login}`)
+                  .join('\n');
+              }
             }
             
             // Set output for use in next step
