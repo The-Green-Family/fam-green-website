@@ -92,8 +92,21 @@ jobs:
             
             let query;
             if (previousTag && previousTag !== '') {
-              // Get PRs merged since the last tag
-              query = `repo:${context.repo.owner}/${context.repo.repo} is:pr is:merged merged:>=${previousTag}`;
+              // Get the date of the previous tag
+              const { data: tagData } = await github.rest.git.getRef({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: `tags/${previousTag}`
+              });
+              
+              const { data: commitData } = await github.rest.git.getCommit({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                commit_sha: tagData.object.sha
+              });
+              
+              const tagDate = commitData.committer.date;
+              query = `repo:${context.repo.owner}/${context.repo.repo} is:pr is:merged merged:>=${tagDate}`;
             } else {
               // Get all merged PRs (limited to 100)
               query = `repo:${context.repo.owner}/${context.repo.repo} is:pr is:merged`;
