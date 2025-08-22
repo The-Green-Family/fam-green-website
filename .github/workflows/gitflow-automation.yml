@@ -93,19 +93,34 @@ jobs:
             let query;
             if (previousTag && previousTag !== '') {
               // Get the date of the previous tag
-              const { data: tagData } = await github.rest.git.getRef({
+              const { data: tagRef } = await github.rest.git.getRef({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 ref: `tags/${previousTag}`
               });
               
-              const { data: commitData } = await github.rest.git.getCommit({
+              let commitSha;
+              if (tagRef.object.type === 'tag') {
+                // Annotated tag - get the tag object first, then the commit
+                const { data: tagObject } = await github.rest.git.getTag({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  tag_sha: tagRef.object.sha
+                });
+                commitSha = tagObject.object.sha;
+              } else {
+                // Lightweight tag - points directly to commit
+                commitSha = tagRef.object.sha;
+              }
+              
+              // Get the commit to extract the date
+              const { data: commitData } = await github.rest.repos.getCommit({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                commit_sha: tagData.object.sha
+                ref: commitSha
               });
               
-              const tagDate = commitData.committer.date;
+              const tagDate = commitData.commit.committer.date;
               query = `repo:${context.repo.owner}/${context.repo.repo} is:pr is:merged merged:>=${tagDate}`;
             } else {
               // Get all merged PRs (limited to 100)
