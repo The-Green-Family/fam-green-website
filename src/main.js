@@ -5,102 +5,165 @@
 const CONFIG = {
     // Performance & Device Settings
     performance: {
-        lowEndTreeCountMin: 10,
-        lowEndTreeCountMax: 20,
-        highEndTreeCountMin: 20,
-        highEndTreeCountMax: 40,
-        lowEndCloudCount: [4, 8],
-        highEndCloudCount: [8, 15],
-        lowEndStarCount: 200,
-        highEndStarCount: 400,
-        lowEndGrassCount: 80,
-        highEndGrassCount: 150,
-        lowEndGeometryComplexity: 1, // For icosahedron complexity
-        highEndGeometryComplexity: 2
+        // Tree counts based on device capabilities
+        lowEndTreeCountMin: 10,                     // Minimum trees for low-end devices
+        lowEndTreeCountMax: 20,                     // Maximum trees for low-end devices
+        highEndTreeCountMin: 20,                    // Minimum trees for high-end devices
+        highEndTreeCountMax: 40,                    // Maximum trees for high-end devices
+
+        // Cloud system performance tuning
+        lowEndCloudCount: [4, 8],                   // Cloud count range for low-end devices
+        highEndCloudCount: [8, 15],                 // Cloud count range for high-end devices
+
+        // Star field optimization
+        lowEndStarCount: 200,                       // Number of stars for low-end devices
+        highEndStarCount: 400,                      // Number of stars for high-end devices
+
+        // Grass patch density
+        lowEndGrassCount: 80,                       // Number of grass patches for low-end devices
+        highEndGrassCount: 150,                     // Number of grass patches for high-end devices
+
+        // Geometry complexity levels
+        lowEndGeometryComplexity: 1,                // Icosahedron detail level for low-end devices
+        highEndGeometryComplexity: 2,               // Icosahedron detail level for high-end devices
+
+        // Frame rate limiting settings
+        frameRateLimits: {
+            veryLowEnd: 30,                         // FPS limit for very low-end devices (mobile + small screen + low DPI)
+            lowEnd: 45,                             // FPS limit for low-end devices (not currently used)
+            highEnd: 60                             // Target FPS for high-end devices (unlimited)
+        },
+
+        // Caching durations (milliseconds)
+        caching: {
+            deviceCapabilities: 300000,             // Cache device detection for 5 minutes
+            colorCache: 100,                        // Cache colors for 100ms (few frames)
+            seasonCache: 1000,                      // Cache season for 1 second
+            domElementCache: Infinity               // Cache DOM elements until page reload
+        },
+
+        // Device detection thresholds
+        deviceThresholds: {
+            smallScreenWidth: 1024,                 // Screen width threshold for "small screen" classification
+            lowPixelDensity: 1.0,                   // Device pixel ratio threshold for "low density"
+            defaultWebGLTextureSize: 1024           // Default WebGL texture size if detection fails
+        }
     },
 
     // Scene Dimensions & Limits
     world: {
-        cameraMinDistance: 80,
-        cameraMaxDistance: 500,
-        groundSize: 2200,
-        groundSegments: 20,
-        treeMinSpacing: 30,
-        safeStartDistance: 200,
-        groundHeight: -15,
-        minCameraHeightAboveGround: 15
+        // Camera distance constraints
+        cameraMinDistance: 80,                      // Minimum camera distance from origin
+        cameraMaxDistance: 500,                     // Maximum camera distance from origin
+
+        // Ground/terrain settings
+        groundSize: 2200,                           // Size of the ground plane (square)
+        groundSegments: 20,                         // Ground geometry segments for height variation
+        groundHeight: -15,                          // Y position of the ground plane
+
+        // Object spacing and positioning
+        treeMinSpacing: 30,                         // Minimum distance between trees
+        safeStartDistance: 200,                     // Safe distance for camera start position
+        minCameraHeightAboveGround: 15              // Minimum camera height above terrain
     },
 
-    // Fox Movement Settings
+    // Fox Character Settings
     fox: {
-        boundaryMargin: 0.75,      // How much of ground size fox can use
-        walkZoneMargin: 0.9,       // Percentage of boundary where fox starts walking (0.9 = 90% of boundary)
-        turnMovementAmount: 0.3,   // Forward movement when only turning (A/D keys)
-        autoReturnTurnMultiplier: 1.5, // Speed multiplier for auto-return turning
-        animationFadeTime: 0.3,    // Animation fade in/out duration
-        runAnimationSpeed: 1.5,    // Speed multiplier for run animation (1.0 = normal speed)
-        treeCollisionRadius: 8,    // Collision radius around trees
-        scale: 0.08,               // Fox model scale
-        heightOffset: 1.2,         // Height offset above ground to prevent sinking/hovering
-        initialPosition: { x: 25, z: 0 },  // Initial fox position (x, z coordinates)
+        // Physical properties
+        scale: 0.08,                                // Fox model scale relative to scene
+        heightOffset: 1.2,                          // Height offset above ground to prevent sinking/hovering
+        initialPosition: { x: 25, z: 0 },           // Initial fox spawn position (x, z coordinates)
+        treeCollisionRadius: 8,                     // Collision detection radius around trees
+
+        // Movement boundaries and behavior
+        boundaryMargin: 0.75,                       // Percentage of ground size fox can use (0.75 = 75%)
+        walkZoneMargin: 0.9,                        // Boundary percentage where fox starts walking (0.9 = 90%)
+        turnMovementAmount: 0.3,                    // Forward movement when only turning (A/D keys)
+        autoReturnTurnMultiplier: 1.5,              // Speed multiplier for auto-return turning
+
+        // Animation settings
+        animationFadeTime: 0.3,                     // Animation fade in/out duration (seconds)
+        runAnimationSpeed: 1.5,                     // Speed multiplier for run animation (1.0 = normal speed)
 
         // Movement configuration
         movement: {
-            speed: 0.3,            // Walk speed
-            runSpeed: 0.8,         // Run speed
-            walkThreshold: 2000,   // ms before switching to run
-            turnSpeed: 0.03        // Turning speed for A/D keys
+            speed: 0.3,                             // Walk speed (units per frame)
+            runSpeed: 0.8,                          // Run speed (units per frame)
+            walkThreshold: 2000,                    // Milliseconds before switching from walk to run
+            turnSpeed: 0.03                         // Turning speed for A/D keys (radians per frame)
         },
 
         // Camera following configuration
         cameraFollow: {
-            distance: 15,          // Distance behind fox
-            height: 15,            // Height above fox
-            smoothing: 0.05        // Camera smoothing factor
+            distance: 15,                           // Distance behind fox for follow camera
+            height: 15,                             // Height above fox for follow camera
+            smoothing: 0.05                         // Camera movement smoothing factor (0-1)
         },
 
         // Terrain following configuration
         terrainTilt: {
-            enabled: true,         // Enable terrain-based fox tilting
-            sampleDistanceMultiplier: 6.25, // Multiplier relative to fox scale (0.5 / 0.08 = 6.25)
-            maxTiltAngle: Math.PI / 12, // Maximum tilt angle (15 degrees)
-            smoothing: 0.03        // Smoothing factor for tilt transitions
+            enabled: true,                          // Enable terrain-based fox tilting
+            sampleDistanceMultiplier: 6.25,         // Multiplier relative to fox scale (0.5 / 0.08 = 6.25)
+            maxTiltAngle: Math.PI / 12,             // Maximum tilt angle (15 degrees in radians)
+            smoothing: 0.03                         // Smoothing factor for tilt transitions (0-1)
         }
     },
 
     // Terrain generation parameters inspired by THREE.Terrain
     terrain: {
-        heightVariation: 60,        // Maximum height variation for more pronounced hills
-        noiseOctaves: 5,           // More noise layers for complexity
-        noisePersistence: 0.55,     // Amplitude reduction per octave
-        primaryScale: 0.02,        // Increased primary scale for more frequent hills
-        secondaryScale: 0.05,      // Increased secondary scale for more variation
-        detailScale: 0.1,          // Detail noise scale for finer texture
-        elevationColorThresholds: [0.3, 0.7], // Color transition points
-        lowAreaIntensity: 0.7,     // Color intensity for low areas
-        highAreaBlend: 0.3,         // Blend amount for high areas
+        heightVariation: 60,                        // Maximum height variation for more pronounced hills
+        noiseOctaves: 5,                            // More noise layers for complexity
+        noisePersistence: 0.55,                     // Amplitude reduction per octave
+        primaryScale: 0.02,                         // Increased primary scale for more frequent hills
+        secondaryScale: 0.05,                       // Increased secondary scale for more variation
+        detailScale: 0.1,                           // Detail noise scale for finer texture
+        elevationColorThresholds: [0.3, 0.7],       // Color transition points
+        lowAreaIntensity: 0.7,                      // Color intensity for low areas
+        highAreaBlend: 0.3,                         // Blend amount for high areas
         focalHill: {
-            radius: 150, // The radius of the hill
-            height: 20   // The maximum height of the hill
+            radius: 150,                            // The radius of the hill
+            height: 20                              // The maximum height of the hill
         }
     },
 
-    // Animation & Timing
+    // Animation & Timing Settings
     animation: {
-        introRotationDuration: 3000,
-        foxReturnDuration: 2500,    // Fox return camera transition duration
-        birdFlightDuration: 15, // seconds
-        particleSpawnChance: 0.6,
-        cacheExpireTime: 3600000, // 1 hour in milliseconds
-        frameTime: 0.016 // approximate 60fps
+        // Camera animation durations
+        introRotationDuration: 3000,                // Intro rotation duration (milliseconds)
+        foxReturnDuration: 2500,                    // Fox return camera transition duration (milliseconds)
+        foxReturnBuffer: 200,                       // Extra buffer time for fox return animation (milliseconds)
+
+        // Intro camera settings
+        introRotationAngle: Math.PI * 0.5,          // Quarter rotation in radians (90 degrees)
+        focalTreeAngle: Math.PI * 0.25,             // 45-degree angle for focal tree camera position
+
+        // Bird flight settings
+        birdFlightDuration: 15,                     // Maximum bird flight duration (seconds)
+
+        // Particle and effect settings
+        particleSpawnChance: 0.6,                   // Base chance for particle spawning (0-1)
+
+        // Performance timing
+        cacheExpireTime: 3600000,                   // General cache expiration (1 hour in milliseconds)
+        frameTime: 0.016,                           // Target frame time (60 FPS = ~16.67ms)
+
+        // Cloud animation settings
+        cloudFloatSpeed: 0.3,                       // Cloud floating animation speed multiplier
+        cloudFloatAmplitude: 15,                    // Cloud floating movement amplitude (units)
+        cloudMinHeight: 160,                        // Minimum cloud height constraint
+        cloudRotationSpeed: 0.001,                  // Cloud rotation speed multiplier
+
+        // Hot air balloon settings
+        balloonResetDistance: 800,                  // Distance at which balloon resets position
+        balloonFloatSpeed: 0.1                      // Balloon floating animation speed multiplier
     },
 
     // Interaction Settings
     interactions: {
-        cameraTreeSafeDistance: 25,    // Safe distance when camera is near trees
-        cameraTreePushAmount: 5,       // Extra push buffer when too close to trees
-        focalTreePosition: { x: 0.5, z: 0.5 }, // Focal tree position
-        treeSittingOffset: -1.5        // How much trees sink into ground for natural look
+        cameraTreeSafeDistance: 25,                 // Safe distance when camera is near trees
+        cameraTreePushAmount: 5,                    // Extra push buffer when too close to trees
+        focalTreePosition: { x: 0.5, z: 0.5 },      // Focal tree position
+        treeSittingOffset: -1.5                     // How much trees sink into ground for natural look
     },
 
     // Tree Properties
@@ -118,7 +181,7 @@ const CONFIG = {
             foliageRadiusMultiplier: 1.2,
             supportClustersMin: 5,
             supportClustersMax: 7,
-            complexityBonus: 1 // Extra geometry complexity for focal tree
+            complexityBonus: 1                      // Extra geometry complexity for focal tree
         }
     },
 
@@ -202,10 +265,10 @@ const CONFIG = {
         minDistanceFromBoulders: 40,
         scaleRange: [2, 8],
         rotationRange: [0, Math.PI * 2],
-        sinkAmount: 0.3, // How much boulder sinks into ground for natural look
-        irregularityFactor: 1.2, // How irregular the boulder shape should be (0-1)
-        color: 0x666666, // Grey color for boulders
-        collisionRadiusMultiplier: 1.8 // Multiplier for fox collision radius
+        sinkAmount: 0.3,                    // How much boulder sinks into ground for natural look
+        irregularityFactor: 1.2,            // How irregular the boulder shape should be (0-1)
+        color: 0x666666,                    // Grey color for boulders
+        collisionRadiusMultiplier: 1.8      // Multiplier for fox collision radius
     },
 
     // Particle System Configuration
@@ -244,13 +307,13 @@ const CONFIG = {
             velocityRange: { x: [-0.3, 0.3], y: [-2, -1.5], z: [-0.3, 0.3] },
             mixChance: 0.6,
             color: 0x87ceeb,
-            spawnRateRange: [4, 6] // Moderate rainfall particles per frame
+            spawnRateRange: [4, 6]           // Moderate rainfall particles per frame
         },
         autumn: {
-            spawnChance: 0.98, // Nearly 100% for heavy autumn effect
-            spawnRateRange: [2, 4] // Increased leaf fall particles per frame
+            spawnChance: 0.98,              // Nearly 100% for heavy autumn effect
+            spawnRateRange: [2, 4]          // Increased leaf fall particles per frame
         },
-        spawnHeight: { min: 80, max: 400 } // Much higher for camera zoom-out
+        spawnHeight: { min: 80, max: 400 }  // Much higher for camera zoom-out
     },
 
     // Star Field Configuration
@@ -287,7 +350,7 @@ const CONFIG = {
 
     // Tree Positioning
     treePositioning: {
-        randomAreaRange: [-1000, 1000],
+        randomAreaRange: [-900, 900], // Wide tree placement with shadow coverage
         minDistanceFromCenter: 80,
         maxPlacementAttempts: 20,
         fallbackCircleDistanceRange: [120, 180]
@@ -298,10 +361,10 @@ const CONFIG = {
         directionalLightIntensity: 0.8,
         directionalLightPosition: [50, 50, 50],
         ambientLightIntensity: 0.4,
-        shadowMapSize: 2048,
-        shadowCameraNear: 0.5,
-        shadowCameraFar: 500,
-        shadowCameraBounds: 250
+        shadowMapSize: 2048, // Balanced resolution for wide coverage
+        shadowCameraNear: 1.0, // Increased for better precision  
+        shadowCameraFar: 400, // Extended to cover more terrain
+        shadowCameraBounds: 1000 // Wide coverage to eliminate hard cutoff lines
     },
 
     // Camera & Scene Setup
@@ -321,6 +384,8 @@ const CONFIG = {
 // Global variables
 let scene, camera, renderer, container, controls;
 let trees = [];
+let clickableTreeMeshes = []; // Cache for raycast target meshes
+
 let mountains = [];
 let clouds = [];
 let birds = [];
@@ -333,7 +398,15 @@ let mouseX = 0, mouseY = 0;
 let windowHalfX, windowHalfY;
 let flyingParticles = [];
 let waitingParticles = [];
+let waitingSnowflakes = [];
+let waitingRaindrops = [];
+let waitingBirds = [];
 let currentTheme = 'auto';
+let systemThemeMediaQuery = null; // Store MediaQueryList to prevent duplicates
+
+// Simple performance optimization flags
+let frameCount = 0;
+let isInitialized = false; // Prevent multiple initializations
 let introRotation = {
     active: true,
     startTime: 0,
@@ -450,7 +523,7 @@ const Utils = {
         let timestamp = null;
 
         return (...args) => {
-            const now = Date.now();
+            const now = performance.now();
             if (!cache || !timestamp || (now - timestamp > expireTime)) {
                 cache = fn(...args);
                 timestamp = now;
@@ -512,32 +585,115 @@ const Utils = {
 };
 
 /**
- * Get current season based on date with caching
- * @returns {string} Current season (spring, summer, autumn, winter)
+ * Get comprehensive seasonal information with caching
+ * @returns {Object} {currentSeason, nextSeason, blendFactor}
  */
-const getCurrentSeason = Utils.createCachedFunction(() => {
+const getSeasonalInfo = Utils.createCachedFunction(() => {
     const now = new Date();
     const month = now.getMonth(); // 0-11
+    const day = now.getDate(); // 1-31
 
-    // Northern hemisphere seasons
-    if (month >= 2 && month <= 4) return 'spring';     // Mar-May
-    if (month >= 5 && month <= 7) return 'summer';     // Jun-Aug
-    if (month >= 8 && month <= 10) return 'autumn';    // Sep-Nov
-    return 'winter';                                   // Dec-Feb
+    // Calculate progress through the month (0.0 to 1.0)
+    const daysInMonth = new Date(now.getFullYear(), month + 1, 0).getDate();
+    const monthProgress = (day - 1) / (daysInMonth - 1);
+
+    let currentSeason, nextSeason = null, blendFactor = 0;
+
+    // Define transition periods - blend in the last 33% of each seasonal month
+    const transitionThreshold = 0.67; // Start blending at 67% through the month
+
+    // Northern hemisphere seasons with transition logic
+    if (month >= 2 && month <= 4) { // Spring (Mar-May)
+        currentSeason = 'spring';
+        if (month === 4 && monthProgress > transitionThreshold) { // Late May
+            nextSeason = 'summer';
+            blendFactor = (monthProgress - transitionThreshold) / (1 - transitionThreshold);
+        }
+    } else if (month >= 5 && month <= 7) { // Summer (Jun-Aug)
+        currentSeason = 'summer';
+        if (month === 7 && monthProgress > transitionThreshold) { // Late August
+            nextSeason = 'autumn';
+            blendFactor = (monthProgress - transitionThreshold) / (1 - transitionThreshold);
+        }
+    } else if (month >= 8 && month <= 10) { // Autumn (Sep-Nov)
+        currentSeason = 'autumn';
+        if (month === 10 && monthProgress > transitionThreshold) { // Late November
+            nextSeason = 'winter';
+            blendFactor = (monthProgress - transitionThreshold) / (1 - transitionThreshold);
+        }
+    } else { // Winter (Dec-Feb)
+        currentSeason = 'winter';
+        if (month === 1 && monthProgress > transitionThreshold) { // Late February
+            nextSeason = 'spring';
+            blendFactor = (monthProgress - transitionThreshold) / (1 - transitionThreshold);
+        }
+    }
+
+    return {
+        currentSeason,
+        nextSeason,
+        blendFactor: Math.min(blendFactor, 1.0)
+    };
 });
 
 /**
- * Device detection utility with caching
+ * Get current season name (for backwards compatibility and discrete season logic)
+ * @returns {string} Current season (spring, summer, autumn, winter)
+ */
+const getCurrentSeason = () => getSeasonalInfo().currentSeason;
+
+/**
+ * Device detection utility with enhanced caching and WebGL capability detection
  * Detects device capabilities to optimize performance
  * @returns {Object} Device capability information
  */
 const getDeviceCapabilities = Utils.createCachedFunction(() => {
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    const isSmallScreen = window.innerWidth < 1024;
+    const isSmallScreen = window.innerWidth < CONFIG.performance.deviceThresholds.smallScreenWidth;
     const isLowEnd = isMobile && isSmallScreen;
 
-    return { isMobile, isSmallScreen, isLowEnd };
-}, 60000); // Cache for 1 minute (in case window is resized)
+    const devicePixelRatio = window.devicePixelRatio || 1;
+    const isHighDPI = devicePixelRatio > 1.5;
+    const isVeryLowEnd = isLowEnd && devicePixelRatio <= CONFIG.performance.deviceThresholds.lowPixelDensity;
+
+    let webglCapabilities = { maxTextureSize: CONFIG.performance.deviceThresholds.defaultWebGLTextureSize, supportsFloatTextures: false };
+    try {
+        const canvas = document.createElement('canvas');
+        const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+        if (gl) {
+            webglCapabilities.maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
+            webglCapabilities.supportsFloatTextures = !!gl.getExtension('OES_texture_float');
+        }
+    } catch (e) {
+        console.warn('WebGL capability detection failed:', e);
+    }
+
+    return {
+        isMobile,
+        isSmallScreen,
+        isLowEnd,
+        isVeryLowEnd,
+        isHighDPI,
+        devicePixelRatio,
+        webglCapabilities
+    };
+}, CONFIG.performance.caching.deviceCapabilities);
+
+// Global cached device capabilities for performance optimization
+let cachedDeviceCapabilities = null;
+
+/**
+ * Get cached device capabilities with minimal overhead
+ * This reduces repeated calls to getDeviceCapabilities() in performance-critical functions
+ * @returns {Object} Cached device capability information
+ */
+function getCachedDeviceCapabilities() {
+    if (!cachedDeviceCapabilities) {
+        cachedDeviceCapabilities = getDeviceCapabilities();
+        setTimeout(() => { cachedDeviceCapabilities = null; }, CONFIG.performance.caching.deviceCapabilities);
+    }
+    return cachedDeviceCapabilities;
+}
 
 /**
  * OrbitControls implementation for camera movement
@@ -592,16 +748,25 @@ class OrbitControls {
         // Ensure radius is clamped
         this.spherical.radius = Math.max(this.minDistance, Math.min(this.maxDistance, this.spherical.radius));
 
-        this.domElement.addEventListener('mousedown', this.onMouseDown.bind(this));
-        this.domElement.addEventListener('mousemove', this.onMouseMove.bind(this));
-        this.domElement.addEventListener('mouseup', this.onMouseUp.bind(this));
+        // Store bound function references for proper cleanup
+        this.boundOnMouseDown = this.onMouseDown.bind(this);
+        this.boundOnMouseMove = this.onMouseMove.bind(this);
+        this.boundOnMouseUp = this.onMouseUp.bind(this);
+        this.boundOnMouseWheel = this.onMouseWheel.bind(this);
+        this.boundOnTouchStart = this.onTouchStart.bind(this);
+        this.boundOnTouchMove = this.onTouchMove.bind(this);
+        this.boundOnTouchEnd = this.onTouchEnd.bind(this);
+
+        this.domElement.addEventListener('mousedown', this.boundOnMouseDown);
+        this.domElement.addEventListener('mousemove', this.boundOnMouseMove);
+        this.domElement.addEventListener('mouseup', this.boundOnMouseUp);
         // allow preventDefault on wheel
-        this.domElement.addEventListener('wheel', this.onMouseWheel.bind(this), { passive: false });
+        this.domElement.addEventListener('wheel', this.boundOnMouseWheel, { passive: false });
 
         // Touch events
-        this.domElement.addEventListener('touchstart', this.onTouchStart.bind(this));
-        this.domElement.addEventListener('touchmove', this.onTouchMove.bind(this));
-        this.domElement.addEventListener('touchend', this.onTouchEnd.bind(this));
+        this.domElement.addEventListener('touchstart', this.boundOnTouchStart);
+        this.domElement.addEventListener('touchmove', this.boundOnTouchMove);
+        this.domElement.addEventListener('touchend', this.boundOnTouchEnd);
 
         this.update();
     }
@@ -763,21 +928,75 @@ class OrbitControls {
         return true;
     }
 
+    dispose() {
+        if (this.domElement && this.boundOnMouseDown) {
+            this.domElement.removeEventListener('mousedown', this.boundOnMouseDown);
+            this.domElement.removeEventListener('mousemove', this.boundOnMouseMove);
+            this.domElement.removeEventListener('mouseup', this.boundOnMouseUp);
+            this.domElement.removeEventListener('wheel', this.boundOnMouseWheel);
+            this.domElement.removeEventListener('touchstart', this.boundOnTouchStart);
+            this.domElement.removeEventListener('touchmove', this.boundOnTouchMove);
+            this.domElement.removeEventListener('touchend', this.boundOnTouchEnd);
+
+            // Clear the bound function references
+            this.boundOnMouseDown = null;
+            this.boundOnMouseMove = null;
+            this.boundOnMouseUp = null;
+            this.boundOnMouseWheel = null;
+            this.boundOnTouchStart = null;
+            this.boundOnTouchMove = null;
+            this.boundOnTouchEnd = null;
+        }
+    }
+
 }
 
 
 // Check system theme preference
+/**
+ * Detect system preferred color scheme
+ * @returns {string} 'dark' if system prefers dark mode, otherwise 'light'
+ */
 function getSystemTheme() {
     return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 }
 
 /**
- * Get current color palette based on season and theme
- * @returns {Object} Current color palette
+ * Blend two color palettes based on a blend factor
+ * @param {Object} palette1 - First color palette
+ * @param {Object} palette2 - Second color palette
+ * @param {number} blendFactor - Blend factor (0.0 = palette1, 1.0 = palette2)
+ * @returns {Object} Blended color palette
+ */
+function blendColorPalettes(palette1, palette2, blendFactor) {
+    const blended = {};
+
+    for (const key in palette1) {
+        if (typeof palette1[key] === 'number') {
+            // Single color value
+            blended[key] = Utils.interpolateColor(palette1[key], palette2[key] || palette1[key], blendFactor);
+        } else if (Array.isArray(palette1[key])) {
+            // Array of colors
+            blended[key] = palette1[key].map((color, index) => {
+                const targetColor = (palette2[key] && palette2[key][index]) || color;
+                return Utils.interpolateColor(color, targetColor, blendFactor);
+            });
+        } else {
+            // Keep non-color properties unchanged
+            blended[key] = palette1[key];
+        }
+    }
+
+    return blended;
+}
+
+/**
+ * Get current color palette based on season and theme with smooth transitions
+ * @returns {Object} Current color palette with seasonal blending
  */
 function getCurrentColors() {
-    // Get current season
-    const currentSeason = getCurrentSeason();
+    // Get seasonal transition info
+    const { currentSeason, nextSeason, blendFactor } = getSeasonalInfo();
 
     // Determine theme
     let theme;
@@ -787,10 +1006,23 @@ function getCurrentColors() {
         theme = currentTheme; // Manual light/dark selection
     }
 
-    // Return seasonal colors with proper light/dark variation
-    return Colors[currentSeason][theme];
+    // Get base colors for current season
+    const currentColors = Colors[currentSeason][theme];
+
+    // If no transition, return current season colors
+    if (!nextSeason || blendFactor === 0) {
+        return currentColors;
+    }
+
+    // Get colors for next season and blend them
+    const nextColors = Colors[nextSeason][theme];
+    return blendColorPalettes(currentColors, nextColors, blendFactor);
 }
 
+/**
+ * Toggle between light, dark, and auto themes
+ * Cycles through available theme options and updates UI
+ */
 function toggleTheme() {
     const themes = ['auto', 'light', 'dark'];
     const currentIndex = themes.indexOf(currentTheme);
@@ -807,6 +1039,10 @@ function toggleTheme() {
     updateSceneColors();
 }
 
+/**
+ * Update all scene elements with current color scheme
+ * Applies colors to objects, lighting, fog, and UI elements
+ */
 function updateSceneColors() {
     const colors = getCurrentColors();
 
@@ -1001,8 +1237,8 @@ function createUnifiedTree(options = {}) {
     } = options;
 
     const colors = getCurrentColors();
-    const deviceCaps = getDeviceCapabilities();
-    const segments = deviceCaps.isLowEnd ? 4 : 6;
+    const deviceCaps = getCachedDeviceCapabilities();
+    const segments = deviceCaps.isVeryLowEnd ? 3 : deviceCaps.isLowEnd ? 4 : 6;
     const tree = new THREE.Group();
 
     // Create trunk geometry centered, then position the mesh instead of translating geometry
@@ -1066,6 +1302,10 @@ function createUnifiedTree(options = {}) {
             Utils.randRange(0.6, 0.9) :
             0.7);
         const heightVariation = Utils.randRange(-8, 8);
+        // Ensure foliage clusters don't go too low relative to trunk
+        const targetHeight = trunkHeight * 0.7 + heightVariation;
+        const minRelativeHeight = trunkHeight * 0.4; // At least 40% of trunk height
+        const actualHeight = Math.max(targetHeight, minRelativeHeight);
 
         const supportCluster = createConnectedFoliage(
             foliageRadius * Utils.randRange(0.8, 1.1),
@@ -1073,7 +1313,7 @@ function createUnifiedTree(options = {}) {
         );
         supportCluster.position.set(
             Math.cos(angle) * distance,
-            trunkHeight * 0.7 + heightVariation,
+            actualHeight,
             Math.sin(angle) * distance
         );
         tree.add(supportCluster);
@@ -1138,7 +1378,11 @@ function createTree(scale = 1, complexity = 1) {
  * @returns {number} Optimal number of trees for current device
  */
 function getOptimalTreeCount() {
-    const { isLowEnd } = getDeviceCapabilities();
+    const { isLowEnd, isVeryLowEnd } = getCachedDeviceCapabilities();
+
+    if (isVeryLowEnd) {
+        return Utils.randInt(CONFIG.performance.lowEndTreeCountMin, Math.floor(CONFIG.performance.lowEndTreeCountMax * 0.7));
+    }
 
     if (isLowEnd) {
         return Utils.randInt(CONFIG.performance.lowEndTreeCountMin, CONFIG.performance.lowEndTreeCountMax);
@@ -1160,8 +1404,8 @@ function createCloud(distance, height, size = CONFIG.clouds.defaultSize, opacity
 
     // Create cloud using multiple spheres for volumetric appearance
     const cloud = new THREE.Group();
-    const { isLowEnd } = getDeviceCapabilities();
-    const numPuffs = isLowEnd ? Utils.randInt(2, 4) : Utils.randInt(3, 6);
+    const { isLowEnd, isVeryLowEnd } = getCachedDeviceCapabilities();
+    const numPuffs = isVeryLowEnd ? Utils.randInt(1, 2) : isLowEnd ? Utils.randInt(2, 4) : Utils.randInt(3, 6);
 
     for (let i = 0; i < numPuffs; i++) {
         const puffSize = size * Utils.randRange(0.6, 1.2);
@@ -1205,11 +1449,12 @@ function createCloud(distance, height, size = CONFIG.clouds.defaultSize, opacity
  */
 function createMountain(distance, colorIndex = 0, scale = 1.0) {
     const colors = getCurrentColors();
-    const { isLowEnd } = getDeviceCapabilities();
+    const { isLowEnd, isVeryLowEnd } = getCachedDeviceCapabilities();
     const mountainConfig = CONFIG.mountains;
 
     // Use device-appropriate resolution
-    const segments = isLowEnd ? mountainConfig.lowEndSegments : mountainConfig.segments;
+    const segments = isVeryLowEnd ? Math.floor(mountainConfig.lowEndSegments * 0.5) :
+        isLowEnd ? mountainConfig.lowEndSegments : mountainConfig.segments;
 
     // Create plane geometry for the mountain terrain
     const geometry = new THREE.PlaneGeometry(
@@ -1345,10 +1590,12 @@ function createMountain(distance, colorIndex = 0, scale = 1.0) {
  * Adjusts cloud count and complexity based on device capabilities
  */
 function createClouds() {
-    const { isLowEnd } = getDeviceCapabilities();
-    const numClouds = isLowEnd ?
-        Utils.randInt(...CONFIG.performance.lowEndCloudCount) :
-        Utils.randInt(...CONFIG.performance.highEndCloudCount);
+    const { isLowEnd, isVeryLowEnd } = getCachedDeviceCapabilities();
+    const numClouds = isVeryLowEnd ?
+        Utils.randInt(...CONFIG.performance.lowEndCloudCount.map(x => Math.floor(x * 0.7))) :
+        isLowEnd ?
+            Utils.randInt(...CONFIG.performance.lowEndCloudCount) :
+            Utils.randInt(...CONFIG.performance.highEndCloudCount);
 
     // Use CONFIG cloud layers
     const layersToUse = isLowEnd ? CONFIG.clouds.layers.slice(0, 2) : CONFIG.clouds.layers;
@@ -1556,6 +1803,13 @@ function createForest() {
 
         scene.add(tree);
         trees.push(tree);
+
+        // Cache clickable meshes for raycast performance
+        tree.traverse(child => {
+            if (child.isMesh && (child.userData.type === 'trunk' || child.userData.type === 'foliage')) {
+                clickableTreeMeshes.push(child);
+            }
+        });
 
         // Ensure all tree meshes cast/receive shadows
         enableTreeShadows(tree);
@@ -1820,23 +2074,22 @@ function canFoxMoveTo(x, z) {
         return false;
     }
 
-    // Check tree collisions
+    // Check tree collisions (using squared distance to avoid sqrt)
+    const radiusSquared = CONFIG.fox.treeCollisionRadius ** 2;
     for (let tree of trees) {
-        const distance = Math.sqrt((x - tree.position.x) ** 2 + (z - tree.position.z) ** 2);
-        if (distance < CONFIG.fox.treeCollisionRadius) {
+        const distanceSquared = (x - tree.position.x) ** 2 + (z - tree.position.z) ** 2;
+        if (distanceSquared < radiusSquared) {
             return false;
         }
     }
 
-    // Check boulder collisions
+    // Check boulder collisions (using squared distance to avoid sqrt)
     for (let boulder of boulders) {
-        const boulderDistance = Math.sqrt(
-            (x - boulder.position.x) ** 2 + (z - boulder.position.z) ** 2
-        );
+        const boulderDistanceSquared = (x - boulder.position.x) ** 2 + (z - boulder.position.z) ** 2;
         // Use stored base radius with multiplier for larger collision area
         const baseRadius = boulder.userData.baseRadius || boulder.userData.scale * 4;
         const collisionRadius = baseRadius * CONFIG.boulders.collisionRadiusMultiplier;
-        if (boulderDistance < collisionRadius) {
+        if (boulderDistanceSquared < collisionRadius ** 2) {
             return false;
         }
     }
@@ -1892,7 +2145,7 @@ function updateFoxMovement() {
         if (isMovingNow && !foxMovement.isMoving) {
             // Start moving
             foxMovement.isMoving = true;
-            foxMovement.moveStartTime = Date.now();
+            foxMovement.moveStartTime = performance.now();
             switchFoxAnimation(1); // Walk
             cameraFollow.enabled = true;
         } else if (!isMovingNow && foxMovement.isMoving) {
@@ -1901,7 +2154,7 @@ function updateFoxMovement() {
             startAutoReturn();
         } else if (isMovingNow) {
             // Check if should switch to run animation (only when moving forward and not near boundary)
-            const moveDuration = Date.now() - foxMovement.moveStartTime;
+            const moveDuration = performance.now() - foxMovement.moveStartTime;
             const isMovingForward = foxMovement.keys.w && !foxMovement.keys.s;
 
             // Check distance to boundary
@@ -1914,7 +2167,7 @@ function updateFoxMovement() {
 
         // Apply user movement
         if (foxMovement.isMoving && moveForward !== 0) {
-            const moveDuration = Date.now() - foxMovement.moveStartTime;
+            const moveDuration = performance.now() - foxMovement.moveStartTime;
             const isMovingForward = foxMovement.keys.w && !foxMovement.keys.s;
 
             // Check if fox is in the walk zone (between walk boundary and stop boundary)
@@ -1953,13 +2206,12 @@ function updateFoxMovement() {
         // Auto-return mode
         updateAutoReturn();
     } else {
-        // No user input and not returning - check if fox needs to return home
-        const distanceFromHome = Math.sqrt(
+        // No user input and not returning - check if fox needs to return home (using squared distance)
+        const distanceFromHomeSquared =
             (foxObject.position.x - CONFIG.fox.initialPosition.x) ** 2 +
-            (foxObject.position.z - CONFIG.fox.initialPosition.z) ** 2
-        );
+            (foxObject.position.z - CONFIG.fox.initialPosition.z) ** 2;
 
-        if (distanceFromHome > 5) { // If more than 5 units from home
+        if (distanceFromHomeSquared > 25) { // If more than 5 units from home (5^2 = 25)
             startAutoReturn();
         }
     }
@@ -1968,7 +2220,7 @@ function updateFoxMovement() {
 function startAutoReturn() {
     foxMovement.isReturning = true;
     foxMovement.isMoving = true;
-    foxMovement.moveStartTime = Date.now();
+    foxMovement.moveStartTime = performance.now();
     switchFoxAnimation(1); // Walk
 
     // Keep camera following during auto-return (can be interrupted by user drag)
@@ -2021,7 +2273,7 @@ function updateAutoReturn() {
     foxObject.rotation.y += turnAmount;
 
     // Move towards home
-    const moveDuration = Date.now() - foxMovement.moveStartTime;
+    const moveDuration = performance.now() - foxMovement.moveStartTime;
 
     // Switch to run animation if walking long enough and not near boundary
     const shouldSlowDown = shouldFoxSlowDown();
@@ -2083,7 +2335,7 @@ function startFoxReturnAnimation() {
     // Store current camera position and target for smooth interpolation
     foxReturnAnimation.startCameraPos = camera.position.clone();
     foxReturnAnimation.startCameraTarget = controls.target.clone();
-    foxReturnAnimation.startTime = Date.now();
+    foxReturnAnimation.startTime = performance.now();
     foxReturnAnimation.active = true;
 }
 
@@ -2468,6 +2720,8 @@ function createGround() {
     geometry.setAttribute('color', new THREE.BufferAttribute(colorAttribute, 3));
     geometry.attributes.position.needsUpdate = true;
     geometry.computeVertexNormals();
+    geometry.computeBoundingBox();
+    geometry.computeBoundingSphere();
 
     // Create material with vertex colors enabled
     const material = new THREE.MeshLambertMaterial({
@@ -2481,9 +2735,6 @@ function createGround() {
     floor.castShadow = true;
 
     scene.add(floor);
-
-    // Add grass patches
-    createGrassPatches();
 }
 
 
@@ -2493,10 +2744,12 @@ function createGround() {
  */
 function createGrassPatches() {
     const colors = getCurrentColors();
-    const deviceCaps = getDeviceCapabilities();
-    const grassCount = deviceCaps.isLowEnd ?
-        CONFIG.performance.lowEndGrassCount :
-        CONFIG.performance.highEndGrassCount;
+    const deviceCaps = getCachedDeviceCapabilities();
+    const grassCount = deviceCaps.isVeryLowEnd ?
+        Math.floor(CONFIG.performance.lowEndGrassCount * 0.6) :
+        deviceCaps.isLowEnd ?
+            CONFIG.performance.lowEndGrassCount :
+            CONFIG.performance.highEndGrassCount;
 
     for (let i = 0; i < grassCount; i++) {
         const grass = createGrassPatch();
@@ -2604,75 +2857,76 @@ function createGrassBlade() {
 function createBoulder(scale = 1) {
     // Create base icosahedron for natural rock shape
     const radius = Utils.randRange(...CONFIG.boulders.scaleRange) * scale;
-    const detail = getDeviceCapabilities().isLowEnd ? 0 : 1;
+    const { isLowEnd, isVeryLowEnd } = getCachedDeviceCapabilities();
+    const detail = isVeryLowEnd || isLowEnd ? 0 : 1;
     const geometry = new THREE.IcosahedronGeometry(radius, detail);
-    
+
     // Make boulder irregular using noise-based displacement for connected surfaces
     const vertices = geometry.attributes.position.array;
     const vertexCount = vertices.length / 3;
-    
+
     // Apply more aggressive noise-based displacement for natural rock shapes
     for (let i = 0; i < vertexCount; i++) {
         const idx = i * 3;
         const x = vertices[idx];
         const y = vertices[idx + 1];
         const z = vertices[idx + 2];
-        
+
         // Calculate distance from center for radial displacement
         const distance = Math.sqrt(x * x + y * y + z * z);
         const normalizedX = x / distance;
         const normalizedY = y / distance;
         const normalizedZ = z / distance;
-        
+
         // Use multiple noise scales for more natural variation
         const noiseScale1 = 0.08; // Large features
         const noiseScale2 = 0.2;  // Medium features
         const noiseScale3 = 0.5;  // Fine details
-        
+
         // Create layered 3D-like noise for more complex shapes
         const noise1a = NoiseUtils.noise2D(x * noiseScale1, y * noiseScale1);
         const noise1b = NoiseUtils.noise2D(y * noiseScale1, z * noiseScale1);
         const noise1c = NoiseUtils.noise2D(x * noiseScale1, z * noiseScale1);
         const largeNoise = (noise1a + noise1b + noise1c) / 3;
-        
+
         const noise2a = NoiseUtils.noise2D(x * noiseScale2, y * noiseScale2);
         const noise2b = NoiseUtils.noise2D(y * noiseScale2, z * noiseScale2);
         const mediumNoise = (noise2a + noise2b) / 2;
-        
+
         const noise3 = NoiseUtils.noise2D(x * noiseScale3, z * noiseScale3);
-        
+
         // Combine multiple noise layers for complex boulder shapes
         const combinedNoise = largeNoise * 0.6 + mediumNoise * 0.3 + noise3 * 0.1;
         const displacement = (combinedNoise - 0.5) * CONFIG.boulders.irregularityFactor * radius;
-        
+
         // Apply displacement along the normal direction
         const newRadius = Math.max(radius * 0.3, radius + displacement); // Prevent inversion
         vertices[idx] = normalizedX * newRadius;
         vertices[idx + 1] = normalizedY * newRadius;
         vertices[idx + 2] = normalizedZ * newRadius;
     }
-    
+
     geometry.attributes.position.needsUpdate = true;
     geometry.computeVertexNormals();
-    
+
     // Boulder material using config color (removed roughness property)
     const material = new THREE.MeshLambertMaterial({
         color: CONFIG.boulders.color
     });
-    
+
     const boulder = new THREE.Mesh(geometry, material);
     boulder.castShadow = true;
     boulder.receiveShadow = true;
-    
+
     // Random rotation for natural placement
     boulder.rotation.x = Utils.randRange(...CONFIG.boulders.rotationRange);
     boulder.rotation.y = Utils.randRange(...CONFIG.boulders.rotationRange);
     boulder.rotation.z = Utils.randRange(...CONFIG.boulders.rotationRange);
-    
+
     boulder.userData.type = 'boulder';
     boulder.userData.scale = scale;
     boulder.userData.baseRadius = radius; // Store original radius for collision
-    
+
     return boulder;
 }
 
@@ -2680,62 +2934,62 @@ function createBoulder(scale = 1) {
  * Create boulder field with collision avoidance
  */
 function createBoulders() {
-    const { isLowEnd } = getDeviceCapabilities();
-    const boulderCount = isLowEnd ?
-        Utils.randInt(...CONFIG.boulders.lowEndCount) :
-        Utils.randInt(...CONFIG.boulders.highEndCount);
-    
+    const { isLowEnd, isVeryLowEnd } = getCachedDeviceCapabilities();
+    const boulderCount = isVeryLowEnd ?
+        Utils.randInt(...CONFIG.boulders.lowEndCount.map(x => Math.floor(x * 0.7))) :
+        isLowEnd ?
+            Utils.randInt(...CONFIG.boulders.lowEndCount) :
+            Utils.randInt(...CONFIG.boulders.highEndCount);
+
     const positions = [];
-    
+
     for (let i = 0; i < boulderCount; i++) {
         let validPosition = false;
         let attempts = 0;
         let x, z;
-        
+
         // Try to find valid position (avoiding trees and other boulders)
         while (!validPosition && attempts < 50) {
             const distance = Utils.randRange(...CONFIG.boulders.spawnDistanceRange);
             const angle = Math.random() * Math.PI * 2;
-            
+
             x = Math.cos(angle) * distance;
             z = Math.sin(angle) * distance;
-            
+
             validPosition = true;
-            
-            // Check distance from trees
+
+            // Check distance from trees (using squared distance)
+            const minTreeDistanceSquared = CONFIG.boulders.minDistanceFromTrees ** 2;
             for (const tree of trees) {
-                const treeDistance = Math.sqrt(
-                    (x - tree.position.x) ** 2 + (z - tree.position.z) ** 2
-                );
-                if (treeDistance < CONFIG.boulders.minDistanceFromTrees) {
+                const treeDistanceSquared = (x - tree.position.x) ** 2 + (z - tree.position.z) ** 2;
+                if (treeDistanceSquared < minTreeDistanceSquared) {
                     validPosition = false;
                     break;
                 }
             }
-            
-            // Check distance from other boulders
+
+            // Check distance from other boulders (using squared distance)
             if (validPosition) {
+                const minDistanceSquared = CONFIG.boulders.minDistanceFromBoulders ** 2;
                 for (const pos of positions) {
-                    const boulderDistance = Math.sqrt(
-                        (x - pos.x) ** 2 + (z - pos.z) ** 2
-                    );
-                    if (boulderDistance < CONFIG.boulders.minDistanceFromBoulders) {
+                    const boulderDistanceSquared = (x - pos.x) ** 2 + (z - pos.z) ** 2;
+                    if (boulderDistanceSquared < minDistanceSquared) {
                         validPosition = false;
                         break;
                     }
                 }
             }
-            
+
             attempts++;
         }
-        
+
         if (validPosition) {
             const boulder = createBoulder();
-            
+
             // Position boulder on terrain
             const groundHeight = getGroundHeightAt(x, z);
             boulder.position.set(x, groundHeight - CONFIG.boulders.sinkAmount, z);
-            
+
             scene.add(boulder);
             boulders.push(boulder);
             positions.push({ x, z });
@@ -2783,9 +3037,13 @@ function getGroundHeightAt(x, z) {
     const normalizedX = (x + sizeX / 2) / sizeX; // 0 to 1
     const normalizedZ = (z + sizeZ / 2) / sizeZ; // 0 to 1
 
+    // Clamp to terrain bounds to prevent invalid lookups
+    const clampedX = Math.max(0, Math.min(1, normalizedX));
+    const clampedZ = Math.max(0, Math.min(1, normalizedZ));
+
     // Convert to vertex grid coordinates (0 to segmentsX/Z)
-    const gridX = normalizedX * segmentsX;
-    const gridZ = normalizedZ * segmentsZ;
+    const gridX = clampedX * segmentsX;
+    const gridZ = clampedZ * segmentsZ;
 
 
     // Get the four surrounding vertices for bilinear interpolation
@@ -2886,10 +3144,12 @@ function updateTerrainColors(colors) {
  * Uses device-specific star counts for optimal performance
  */
 function createStars() {
-    const deviceCaps = getDeviceCapabilities();
-    const starCount = deviceCaps.isLowEnd ?
-        CONFIG.performance.lowEndStarCount :
-        CONFIG.performance.highEndStarCount;
+    const deviceCaps = getCachedDeviceCapabilities();
+    const starCount = deviceCaps.isVeryLowEnd ?
+        Math.floor(CONFIG.performance.lowEndStarCount * 0.5) :
+        deviceCaps.isLowEnd ?
+            CONFIG.performance.lowEndStarCount :
+            CONFIG.performance.highEndStarCount;
 
     // Create star field as a single geometry for better performance
     const starGeometry = new THREE.BufferGeometry();
@@ -3143,13 +3403,13 @@ function createHotAirBalloon() {
         const basketZ = Math.sin(angle) * basketRadius;
         const basketAttachY = basket.position.y + config.basketHeight / 2; // Top of basket
 
-        // Calculate rope length based on actual distance
-        const ropeVector = new THREE.Vector3(
+        // Calculate rope length based on actual distance (reuse temp vector)
+        window.tempVector3_1.set(
             basketX - balloonX,
             basketAttachY - balloonAttachY,
             basketZ - balloonZ
         );
-        const ropeLength = ropeVector.length();
+        const ropeLength = window.tempVector3_1.length();
 
         const ropeGeometry = new THREE.CylinderGeometry(0.08, 0.08, ropeLength);
         const ropeMaterial = new THREE.MeshLambertMaterial({ color: 0x654321 });
@@ -3205,8 +3465,8 @@ function updateStarVisibility() {
     }
     if (hotAirBalloon) {
         const currentSeason = getCurrentSeason();
-        const isBallooningSeason = currentSeason !== 'winter'; // Hide during winter
-        const isRainySpringWeather = currentSeason === 'spring' && isRainySpringDay; // Hide during rainy spring
+        const isBallooningSeason = currentSeason !== 'winter';
+        const isRainySpringWeather = currentSeason === 'spring' && isRainySpringDay;
         hotAirBalloon.visible = !isDarkTheme && isBallooningSeason && !isRainySpringWeather; // Show in light mode and good weather only
     }
 }
@@ -3358,15 +3618,23 @@ function createRaindrop() {
  */
 function spawnSnowfall() {
     // Heavy snowfall - spawn configurable snowflakes per frame for intense effect
-    const { isLowEnd } = getDeviceCapabilities();
+    const { isLowEnd, isVeryLowEnd } = getCachedDeviceCapabilities();
     const baseRange = CONFIG.weather.snow.spawnRateRange;
-    const spawnRate = isLowEnd ?
-        [Math.max(1, Math.floor(baseRange[0] * 0.5)), Math.max(2, Math.floor(baseRange[1] * 0.5))] :
-        baseRange;
+    const spawnRate = isVeryLowEnd ?
+        [Math.max(1, Math.floor(baseRange[0] * 0.3)), Math.max(1, Math.floor(baseRange[1] * 0.3))] :
+        isLowEnd ?
+            [Math.max(1, Math.floor(baseRange[0] * 0.5)), Math.max(2, Math.floor(baseRange[1] * 0.5))] :
+            baseRange;
     const snowflakesPerFrame = Utils.randInt(...spawnRate);
 
     for (let i = 0; i < snowflakesPerFrame; i++) {
-        const snowflake = createSnowflake();
+        let snowflake;
+        if (waitingSnowflakes.length > 0) {
+            snowflake = waitingSnowflakes.pop();
+        } else {
+            snowflake = createSnowflake();
+        }
+
         const boundary = CONFIG.particles.worldBoundary;
         const height = CONFIG.weather.spawnHeight;
 
@@ -3378,7 +3646,7 @@ function spawnSnowfall() {
 
         snowflake.visible = true;
         flyingParticles.push(snowflake);
-        scene.add(snowflake);
+        if (!snowflake.parent) scene.add(snowflake);
     }
 }
 
@@ -3388,15 +3656,23 @@ function spawnSnowfall() {
  */
 function spawnRainfall() {
     // Moderate to heavy rain - spawn configurable raindrops per frame
-    const { isLowEnd } = getDeviceCapabilities();
+    const { isLowEnd, isVeryLowEnd } = getCachedDeviceCapabilities();
     const baseRange = CONFIG.weather.rain.spawnRateRange;
-    const spawnRate = isLowEnd ?
-        [Math.max(1, Math.floor(baseRange[0] * 0.6)), Math.max(2, Math.floor(baseRange[1] * 0.6))] :
-        baseRange;
+    const spawnRate = isVeryLowEnd ?
+        [Math.max(1, Math.floor(baseRange[0] * 0.4)), Math.max(1, Math.floor(baseRange[1] * 0.4))] :
+        isLowEnd ?
+            [Math.max(1, Math.floor(baseRange[0] * 0.6)), Math.max(2, Math.floor(baseRange[1] * 0.6))] :
+            baseRange;
     const raindropsPerFrame = Utils.randInt(...spawnRate);
 
     for (let i = 0; i < raindropsPerFrame; i++) {
-        const raindrop = createRaindrop();
+        let raindrop;
+        if (waitingRaindrops.length > 0) {
+            raindrop = waitingRaindrops.pop();
+        } else {
+            raindrop = createRaindrop();
+        }
+
         const boundary = CONFIG.particles.worldBoundary;
         const height = CONFIG.weather.spawnHeight;
 
@@ -3408,7 +3684,7 @@ function spawnRainfall() {
 
         raindrop.visible = true;
         flyingParticles.push(raindrop);
-        scene.add(raindrop);
+        if (!raindrop.parent) scene.add(raindrop);
     }
 }
 
@@ -3422,11 +3698,13 @@ function spawnFallingLeaves(season) {
 
     if (season === 'autumn') {
         leafSpawnChance = CONFIG.weather.autumn.spawnChance;
-        const { isLowEnd } = getDeviceCapabilities();
+        const { isLowEnd, isVeryLowEnd } = getCachedDeviceCapabilities();
         const baseRange = CONFIG.weather.autumn.spawnRateRange;
-        const spawnRate = isLowEnd ?
-            [Math.max(1, Math.floor(baseRange[0] * 0.7)), Math.max(1, Math.floor(baseRange[1] * 0.7))] :
-            baseRange;
+        const spawnRate = isVeryLowEnd ?
+            [Math.max(1, Math.floor(baseRange[0] * 0.5)), Math.max(1, Math.floor(baseRange[1] * 0.5))] :
+            isLowEnd ?
+                [Math.max(1, Math.floor(baseRange[0] * 0.7)), Math.max(1, Math.floor(baseRange[1] * 0.7))] :
+                baseRange;
         leavesPerFrame = Utils.randInt(...spawnRate);
     }
 
@@ -3493,7 +3771,7 @@ function spawnParticle() {
 function updateBirds() {
     for (let i = birds.length - 1; i >= 0; i--) {
         const bird = birds[i];
-        const time = Date.now() * 0.001;
+        const time = performance.now() * 0.001;
 
         // Update flight time
         bird.userData.flightTime += CONFIG.animation.frameTime;
@@ -3560,11 +3838,18 @@ function updateBirds() {
         const pitch = Math.atan2(velocity.y, Math.sqrt(velocity.x * velocity.x + velocity.z * velocity.z));
         bird.rotation.x = -pitch * 0.5;
 
-        // Remove bird if it's too far away or been flying too long
-        const distanceFromCenter = bird.position.distanceTo(new THREE.Vector3(0, 0, 0));
+        // Remove bird if it's too far away or been flying too long (reuse temp vector)
+        window.tempVector3_1.set(0, 0, 0);
+        const distanceFromCenter = bird.position.distanceTo(window.tempVector3_1);
         if (distanceFromCenter > CONFIG.birds.maxFlightDistance || bird.userData.flightTime > CONFIG.animation.birdFlightDuration) {
             scene.remove(bird);
             birds.splice(i, 1);
+
+            // Dispose of Three.js resources to prevent memory leaks
+            bird.traverse((child) => {
+                if (child.geometry) child.geometry.dispose();
+                if (child.material) child.material.dispose();
+            });
         }
     }
 }
@@ -3584,7 +3869,7 @@ function updateParticles() {
         particle.rotation.z += particle.userData.rotation.z;
 
         // Add some wind effect
-        particle.userData.velocity.x += Math.sin(Date.now() * 0.001) * 0.01;
+        particle.userData.velocity.x += Math.sin(performance.now() * 0.001) * 0.01;
 
         // Remove if too far down or out of bounds
         if (particle.position.y < CONFIG.particles.fallBoundary ||
@@ -3593,13 +3878,28 @@ function updateParticles() {
 
             scene.remove(particle);
             flyingParticles.splice(i, 1);
-            waitingParticles.push(particle);
             particle.visible = false;
+
+            // Pool particles based on type
+            if (particle.userData.type === 'snow') {
+                waitingSnowflakes.push(particle);
+            } else if (particle.userData.type === 'rain') {
+                waitingRaindrops.push(particle);
+            } else {
+                waitingParticles.push(particle);
+            }
         }
     }
 }
 
 function init() {
+    // Prevent multiple initializations which could cause event listener leaks
+    if (isInitialized) {
+        console.warn('init() called multiple times - skipping to prevent event listener leaks');
+        return;
+    }
+    isInitialized = true;
+
     // Determine if this is a rainy spring day (random chance on page load)
     isRainySpringDay = Math.random() < CONFIG.weather.rain.mixChance;
 
@@ -3609,6 +3909,11 @@ function init() {
     scene = new THREE.Scene();
     const colors = getCurrentColors();
     scene.background = new THREE.Color(colors.bg);
+
+    // Initialize reusable temporary vectors for performance optimization
+    window.tempVector3_1 = new THREE.Vector3();
+    window.tempVector3_2 = new THREE.Vector3();
+    window.tempVector2_1 = new THREE.Vector2();
     scene.fog = new THREE.Fog(colors.bg, CONFIG.scene.fogNear, CONFIG.scene.fogFar);
 
     // Camera setup
@@ -3644,11 +3949,20 @@ function init() {
     directionalLight.shadow.camera.right = CONFIG.lighting.shadowCameraBounds;
     directionalLight.shadow.camera.top = CONFIG.lighting.shadowCameraBounds;
     directionalLight.shadow.camera.bottom = -CONFIG.lighting.shadowCameraBounds;
+
+    // Add shadow bias to reduce flickering and shadow acne
+    directionalLight.shadow.bias = -0.0005;
+    directionalLight.shadow.normalBias = 0.02;
+
     scene.add(directionalLight);
 
     // Create objects
     createGround();
     createMountains();
+
+    // Create grass patches after all terrain is generated
+    createGrassPatches();
+
     createClouds();
     createStars();
 
@@ -3664,7 +3978,7 @@ function init() {
     createBoulders();
     createFox();
 
-    // Event listeners
+    // Event listeners (tracked for debugging)
     window.addEventListener('resize', onWindowResize);
     document.addEventListener('mousemove', onMouseMove);
     document.addEventListener('click', onTreeClick);
@@ -3800,12 +4114,15 @@ function init() {
     windowHalfY = window.innerHeight / 2;
 
     // Listen for system theme changes
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
-        if (currentTheme === 'auto') {
-            updateSceneColors();
-            updateStarVisibility(); // Make sure stars update in auto mode
-        }
-    });
+    if (!systemThemeMediaQuery) {
+        systemThemeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+        systemThemeMediaQuery.addEventListener('change', () => {
+            if (currentTheme === 'auto') {
+                updateSceneColors();
+                updateStarVisibility(); // Make sure stars update in auto mode
+            }
+        });
+    }
 
     // Initial star visibility check
     updateStarVisibility();
@@ -3814,6 +4131,7 @@ function init() {
 }
 
 function onWindowResize() {
+    console.log('Window resize triggered');
     windowHalfX = window.innerWidth / 2;
     windowHalfY = window.innerHeight / 2;
 
@@ -3842,17 +4160,8 @@ function onTreeClick(event) {
 
     raycaster.setFromCamera(mouse, camera);
 
-    // Check for tree intersections
-    const treeObjects = [];
-    trees.forEach(tree => {
-        tree.traverse(child => {
-            if (child.isMesh && (child.userData.type === 'trunk' || child.userData.type === 'foliage')) {
-                treeObjects.push(child);
-            }
-        });
-    });
-
-    const intersects = raycaster.intersectObjects(treeObjects);
+    // Check for tree intersections using cached meshes
+    const intersects = raycaster.intersectObjects(clickableTreeMeshes);
 
     if (intersects.length > 0) {
         // Find which tree was clicked
@@ -3872,6 +4181,12 @@ function onTreeClick(event) {
  * @param {THREE.Group} tree - Tree object to spawn birds from
  */
 function spawnBirdFromTree(tree) {
+    // Limit total number of birds to prevent memory/performance issues
+    const maxBirds = 20;
+    if (birds.length >= maxBirds) {
+        return;
+    }
+
     const numBirds = Utils.randInt(...CONFIG.birds.spawnCountRange);
     const treePos = tree.position;
 
@@ -3902,129 +4217,165 @@ function spawnBirdFromTree(tree) {
     }
 }
 
+// Performance optimization - cache frequently used values
+let lastFrameTime = 0;
+let cachedColors = null;
+let colorsCacheTime = 0;
+// Device capabilities are refreshed per-frame for resize/DPI changes
+let lastDeviceCapsUpdate = 0;
+let frameRateLimit = CONFIG.performance.frameRateLimits.highEnd;
+let frameInterval = 1000 / frameRateLimit;
+
+// Cache DOM elements for better performance
+const domElements = {
+    title: null,
+    subtitle: null,
+    separator: null,
+    cached: false
+};
+
+/**
+ * Cache frequently accessed DOM elements for better performance
+ * Avoids repeated querySelector calls during animation loop
+ */
+function cacheDOMElements() {
+    if (!domElements.cached) {
+        domElements.title = document.querySelector('.title');
+        domElements.subtitle = document.querySelector('.subtitle');
+        domElements.separator = document.querySelector('.title-separator');
+        domElements.cached = true;
+    }
+}
+
+/**
+ * Get current colors with frame-level caching to avoid repeated calculations in animate loop
+ * @returns {Object} Current theme colors
+ */
+function getCachedCurrentColors() {
+    const now = performance.now();
+    if (!cachedColors || now - colorsCacheTime > CONFIG.performance.caching.colorCache) {
+        cachedColors = getCurrentColors();
+        colorsCacheTime = now;
+    }
+    return cachedColors;
+}
+
+/**
+ * Get current season with frame-level caching
+ * @returns {string} Current season
+ */
+
+/**
+ * Calculate optimal camera position for focal tree view
+ * Extracted to avoid code duplication in animation functions
+ * @returns {Object} Camera position and target coordinates
+ */
+function calculateFocalTreeCameraPosition() {
+    const focalTreePosition = CONFIG.interactions.focalTreePosition;
+    const focalTreeGroundHeight = getGroundHeightAt(focalTreePosition.x, focalTreePosition.z);
+    const focalTreeY = focalTreeGroundHeight + CONFIG.interactions.treeSittingOffset;
+    const minDistance = CONFIG.world.cameraMinDistance;
+    const introRadius = CONFIG.world.safeStartDistance;
+    const introBaseHeight = CONFIG.scene.introBaseHeight;
+    const angle = CONFIG.animation.focalTreeAngle;
+
+    let targetCameraX = focalTreePosition.x + Math.cos(angle) * introRadius;
+    let targetCameraY = introBaseHeight;
+    let targetCameraZ = focalTreePosition.z + Math.sin(angle) * introRadius;
+
+    const currentDistance = introRadius;
+    const safeMinDistance = minDistance * 1.05;
+    if (currentDistance < safeMinDistance) {
+        const scale = safeMinDistance / currentDistance;
+        targetCameraX = focalTreePosition.x + Math.cos(angle) * introRadius * scale;
+        targetCameraZ = focalTreePosition.z + Math.sin(angle) * introRadius * scale;
+    }
+
+    return {
+        camera: { x: targetCameraX, y: targetCameraY, z: targetCameraZ },
+        target: { x: focalTreePosition.x, y: focalTreeY + 10, z: focalTreePosition.z }
+    };
+}
+
 /**
  * Main animation loop with performance optimizations
  * Handles intro sequence, camera controls, and all animations
  */
 function animate() {
     requestAnimationFrame(animate);
+    frameCount++;
+
+
+    // Update device capabilities periodically or on window resize
+    const now = performance.now();
+    if (now - lastDeviceCapsUpdate > 1000) { // Update every second
+        const deviceCaps = getCachedDeviceCapabilities();
+        frameRateLimit = deviceCaps.isVeryLowEnd ?
+            CONFIG.performance.frameRateLimits.veryLowEnd :
+            deviceCaps.isLowEnd ?
+                CONFIG.performance.frameRateLimits.lowEnd :
+                CONFIG.performance.frameRateLimits.highEnd;
+        frameInterval = 1000 / frameRateLimit;
+        lastDeviceCapsUpdate = now;
+
+        // Optional frame rate limiting for very low-end devices only
+        if (deviceCaps.isVeryLowEnd) {
+            if (now - lastFrameTime < frameInterval) {
+                return;
+            }
+            lastFrameTime = now;
+        }
+    }
 
     // Fox return animation
     if (foxReturnAnimation.active) {
-        const elapsed = Date.now() - foxReturnAnimation.startTime;
+        const elapsed = performance.now() - foxReturnAnimation.startTime;
         const progress = Math.min(elapsed / foxReturnAnimation.duration, 1);
-        const extendedProgress = Math.min(elapsed / (foxReturnAnimation.duration + 200), 1); // Add 200ms buffer
+        const extendedProgress = Math.min(elapsed / (foxReturnAnimation.duration + CONFIG.animation.foxReturnBuffer), 1);
 
         if (extendedProgress < 1) {
-            // Smooth camera transition to focus on focal tree (use clamped progress for movement)
             const clampedProgress = Math.min(progress, 1);
-            const easeOut = 1 - Math.pow(1 - clampedProgress, 3); // Smooth ease-out
+            const easeOut = 1 - Math.pow(1 - clampedProgress, 3);
+            const positions = calculateFocalTreeCameraPosition();
 
-            // Target: Position camera to showcase the focal tree (similar to intro)
-            const focalTreePosition = CONFIG.interactions.focalTreePosition;
-            const focalTreeGroundHeight = getGroundHeightAt(focalTreePosition.x, focalTreePosition.z);
-            const focalTreeY = focalTreeGroundHeight + CONFIG.interactions.treeSittingOffset;
+            camera.position.x = foxReturnAnimation.startCameraPos.x + (positions.camera.x - foxReturnAnimation.startCameraPos.x) * easeOut;
+            camera.position.y = foxReturnAnimation.startCameraPos.y + (positions.camera.y - foxReturnAnimation.startCameraPos.y) * easeOut;
+            camera.position.z = foxReturnAnimation.startCameraPos.z + (positions.camera.z - foxReturnAnimation.startCameraPos.z) * easeOut;
 
-            const minDistance = CONFIG.world.cameraMinDistance; // 80 units minimum
-
-            // Position camera around the focal tree (same distance as intro animation)
-            const introRadius = CONFIG.world.safeStartDistance; // 200 units - same as intro
-            const introBaseHeight = CONFIG.scene.introBaseHeight; // Same base height as intro
-
-            // Use a fixed angle for consistent positioning (45 degrees from focal tree)
-            const angle = Math.PI * 0.25; // 45 degrees
-            let targetCameraX = focalTreePosition.x + Math.cos(angle) * introRadius;
-            let targetCameraY = introBaseHeight; // Same height as intro
-            let targetCameraZ = focalTreePosition.z + Math.sin(angle) * introRadius;
-
-            // Distance check - intro radius should already be safe, but verify
-            const currentDistance = introRadius;
-            const safeMinDistance = minDistance * 1.05; // Add 5% buffer
-            if (currentDistance < safeMinDistance) {
-                const scale = safeMinDistance / currentDistance;
-                targetCameraX = focalTreePosition.x + Math.cos(angle) * introRadius * scale;
-                targetCameraY = introBaseHeight;
-                targetCameraZ = focalTreePosition.z + Math.sin(angle) * introRadius * scale;
-            }
-
-            // Target look-at point (focal tree trunk/middle area)
-            const targetLookAtX = focalTreePosition.x;
-            const targetLookAtY = focalTreeY + 10; // Look at tree middle area
-            const targetLookAtZ = focalTreePosition.z;
-
-            // Interpolate camera position
-            camera.position.x = foxReturnAnimation.startCameraPos.x + (targetCameraX - foxReturnAnimation.startCameraPos.x) * easeOut;
-            camera.position.y = foxReturnAnimation.startCameraPos.y + (targetCameraY - foxReturnAnimation.startCameraPos.y) * easeOut;
-            camera.position.z = foxReturnAnimation.startCameraPos.z + (targetCameraZ - foxReturnAnimation.startCameraPos.z) * easeOut;
-
-            // Interpolate look-at target
-            const currentTargetX = foxReturnAnimation.startCameraTarget.x + (targetLookAtX - foxReturnAnimation.startCameraTarget.x) * easeOut;
-            const currentTargetY = foxReturnAnimation.startCameraTarget.y + (targetLookAtY - foxReturnAnimation.startCameraTarget.y) * easeOut;
-            const currentTargetZ = foxReturnAnimation.startCameraTarget.z + (targetLookAtZ - foxReturnAnimation.startCameraTarget.z) * easeOut;
+            const currentTargetX = foxReturnAnimation.startCameraTarget.x + (positions.target.x - foxReturnAnimation.startCameraTarget.x) * easeOut;
+            const currentTargetY = foxReturnAnimation.startCameraTarget.y + (positions.target.y - foxReturnAnimation.startCameraTarget.y) * easeOut;
+            const currentTargetZ = foxReturnAnimation.startCameraTarget.z + (positions.target.z - foxReturnAnimation.startCameraTarget.z) * easeOut;
 
             camera.lookAt(currentTargetX, currentTargetY, currentTargetZ);
             controls.target.set(currentTargetX, currentTargetY, currentTargetZ);
         } else {
-            // Animation complete - ensure final frame focuses on focal tree
-            const focalTreePosition = CONFIG.interactions.focalTreePosition;
-            const focalTreeGroundHeight = getGroundHeightAt(focalTreePosition.x, focalTreePosition.z);
-            const focalTreeY = focalTreeGroundHeight + CONFIG.interactions.treeSittingOffset;
+            const positions = calculateFocalTreeCameraPosition();
 
-            const minDistance = CONFIG.world.cameraMinDistance; // 80 units minimum
+            camera.position.set(positions.camera.x, positions.camera.y, positions.camera.z);
+            camera.lookAt(positions.target.x, positions.target.y, positions.target.z);
+            controls.target.set(positions.target.x, positions.target.y, positions.target.z);
 
-            // Use same positioning logic as animation (same distance as intro)
-            const introRadius = CONFIG.world.safeStartDistance; // 200 units - same as intro
-            const introBaseHeight = CONFIG.scene.introBaseHeight; // Same base height as intro
-
-            // Use the same fixed angle for consistent positioning
-            const angle = Math.PI * 0.25; // 45 degrees
-            let targetCameraX = focalTreePosition.x + Math.cos(angle) * introRadius;
-            let targetCameraY = introBaseHeight;
-            let targetCameraZ = focalTreePosition.z + Math.sin(angle) * introRadius;
-
-            // Distance check - intro radius should already be safe, but verify
-            const currentDistance = introRadius;
-            const safeMinDistance = minDistance * 1.05; // Add 5% buffer
-            if (currentDistance < safeMinDistance) {
-                const scale = safeMinDistance / currentDistance;
-                targetCameraX = focalTreePosition.x + Math.cos(angle) * introRadius * scale;
-                targetCameraY = introBaseHeight;
-                targetCameraZ = focalTreePosition.z + Math.sin(angle) * introRadius * scale;
-            }
-            const targetLookAtX = focalTreePosition.x;
-            const targetLookAtY = focalTreeY + 10;
-            const targetLookAtZ = focalTreePosition.z;
-
-            // Set exact final positions
-            camera.position.set(targetCameraX, targetCameraY, targetCameraZ);
-            camera.lookAt(targetLookAtX, targetLookAtY, targetLookAtZ);
-
-            // Set controls target and sync internal state (same method as intro)
-            controls.target.set(targetLookAtX, targetLookAtY, targetLookAtZ);
-
-            // Update controls to match final camera position (exact same as intro fix)
             controls.offset.copy(camera.position).sub(controls.target);
             controls.spherical.setFromVector3(controls.offset);
 
-            // Deactivate animation and skip controls updates for a few frames
             foxReturnAnimation.active = false;
-            foxReturnAnimation.skipControlsFrames = 3; // Skip 3 frames to prevent jump
+            foxReturnAnimation.skipControlsFrames = 3;
         }
     }
 
     // Intro rotation animation
     if (introRotation.active) {
         if (introRotation.startTime === 0) {
-            introRotation.startTime = Date.now();
+            introRotation.startTime = performance.now();
         }
 
-        const elapsed = Date.now() - introRotation.startTime;
+        const elapsed = performance.now() - introRotation.startTime;
         const progress = Math.min(elapsed / introRotation.duration, 1);
 
         if (progress < 1) {
             // Smooth rotation around the scene with ease-out
-            const easedRotation = 1 - Math.pow(1 - progress, 4); // Stronger ease-out for rotation
-            const angle = easedRotation * Math.PI * 0.5 * introRotation.direction; // Quarter rotation in random direction
+            const easedRotation = 1 - Math.pow(1 - progress, 4);
+            const angle = easedRotation * CONFIG.animation.introRotationAngle * introRotation.direction;
             const radius = CONFIG.world.safeStartDistance;
             const baseHeight = CONFIG.scene.introBaseHeight;
 
@@ -4050,10 +4401,8 @@ function animate() {
 
             // Force colors to reset to current season after intro
             if (currentTheme === 'auto') {
-                // Use the same getCurrentColors() function that the rest of the app uses
-                const currentSeasonColors = getCurrentColors();
+                const currentSeasonColors = getCachedCurrentColors();
 
-                // Apply current season colors with proper theme
                 scene.background.setHex(currentSeasonColors.bg);
                 scene.fog.color.setHex(currentSeasonColors.bg);
                 trees.forEach(tree => updateTreeColors(tree, currentSeasonColors));
@@ -4062,14 +4411,11 @@ function animate() {
                 updateBoulderColors();
                 updateTerrainColors(currentSeasonColors);
 
-                // Update text color for contrast
+                cacheDOMElements();
                 const textColor = `#${currentSeasonColors.textColor.toString(16).padStart(6, '0')}`;
-                const titleElement = document.querySelector('.title');
-                const subtitleElement = document.querySelector('.subtitle');
-                const separatorElement = document.querySelector('.title-separator');
-                if (titleElement) titleElement.style.setProperty('color', textColor, 'important');
-                if (subtitleElement) subtitleElement.style.setProperty('color', textColor, 'important');
-                if (separatorElement) separatorElement.style.setProperty('background', `linear-gradient(to right, transparent, ${textColor}, transparent)`, 'important');
+                if (domElements.title) domElements.title.style.setProperty('color', textColor, 'important');
+                if (domElements.subtitle) domElements.subtitle.style.setProperty('color', textColor, 'important');
+                if (domElements.separator) domElements.separator.style.setProperty('background', `linear-gradient(to right, transparent, ${textColor}, transparent)`, 'important');
             }
         }
     }
@@ -4084,19 +4430,15 @@ function animate() {
         }
     }
 
-    // Reset text color for manual themes (let CSS handle it)
     if (currentTheme !== 'auto') {
-        const titleElement = document.querySelector('.title');
-        const subtitleElement = document.querySelector('.subtitle');
-        const separatorElement = document.querySelector('.title-separator');
-
-        if (titleElement) titleElement.style.removeProperty('color');
-        if (subtitleElement) subtitleElement.style.removeProperty('color');
-        if (separatorElement) separatorElement.style.removeProperty('background');
+        cacheDOMElements();
+        if (domElements.title) domElements.title.style.removeProperty('color');
+        if (domElements.subtitle) domElements.subtitle.style.removeProperty('color');
+        if (domElements.separator) domElements.separator.style.removeProperty('background');
     }
 
     // Tree swaying animation
-    const time = Date.now() * 0.002;
+    const time = performance.now() * 0.002;
 
     // Cloud floating animation
     clouds.forEach((cloud, index) => {
@@ -4105,9 +4447,9 @@ function animate() {
 
         // Gentle floating motion with minimum height constraint
         const baseY = cloud.userData.baseHeight || 180;
-        const floatOffset = Math.sin(time * 0.3 + windOffset) * 15 * windStrength;
-        cloud.position.y = Math.max(baseY + floatOffset, 160); // Minimum height of 160
-        cloud.rotation.y += 0.001 * windStrength;
+        const floatOffset = Math.sin(time * CONFIG.animation.cloudFloatSpeed + windOffset) * CONFIG.animation.cloudFloatAmplitude * windStrength;
+        cloud.position.y = Math.max(baseY + floatOffset, CONFIG.animation.cloudMinHeight);
+        cloud.rotation.y += CONFIG.animation.cloudRotationSpeed * windStrength;
 
         // Subtle opacity variation
         cloud.children.forEach(puff => {
@@ -4123,79 +4465,95 @@ function animate() {
         hotAirBalloon.position.x += speed;
 
         // Add gentle floating motion
-        const floatOffset = Math.sin(time * 0.1) * CONFIG.hotAirBalloon.floatAmplitude;
+        const floatOffset = Math.sin(time * CONFIG.animation.balloonFloatSpeed) * CONFIG.hotAirBalloon.floatAmplitude;
         hotAirBalloon.position.y = CONFIG.hotAirBalloon.height + floatOffset;
 
         // Reset position when it moves too far to the right
-        if (hotAirBalloon.position.x > 800) {
+        if (hotAirBalloon.position.x > CONFIG.animation.balloonResetDistance) {
             hotAirBalloon.position.x = hotAirBalloon.userData.startX;
         }
     }
 
-    // Grass swaying animation
-    grassPatches.forEach(patch => {
-        patch.children.forEach(blade => {
-            if (blade.userData.type === 'grass' && blade.userData.swayPhase !== undefined) {
-                const sway = Math.sin(time * blade.userData.swaySpeed + blade.userData.swayPhase) * blade.userData.swayIntensity;
-                blade.rotation.z = sway;
+    // Grass swaying animation - balanced frequency for smooth motion
+    if (frameCount % 3 === 0) { // Back to every 3rd frame for smooth grass movement
+        grassPatches.forEach(patch => {
+            patch.children.forEach(blade => {
+                if (blade.userData.type === 'grass' && blade.userData.swayPhase !== undefined) {
+                    const sway = Math.sin(time * blade.userData.swaySpeed + blade.userData.swayPhase) * blade.userData.swayIntensity;
+                    blade.rotation.z = sway;
+                }
+            });
+        });
+    }
+
+    // Star twinkling animation - only in dark mode, increased frequency for more twinkle
+    if (currentTheme === 'dark' && frameCount % 3 === 0) { // Every 3rd frame for more visible twinkling
+        stars.forEach(starField => {
+            if (starField.visible && starField.geometry.userData.originalColors) {
+                const positions = starField.geometry.attributes.position.array;
+                const colors = starField.geometry.attributes.color.array;
+                const originalColors = starField.geometry.userData.originalColors;
+
+                // Update every 4th star for more visible twinkling
+                for (let i = 0; i < positions.length; i += 12) {
+                    const phaseOffset = positions[i] * 0.01;
+                    const twinkle = Math.sin(time + phaseOffset) * CONFIG.stars.twinkleIntensity + (1 - CONFIG.stars.twinkleIntensity);
+
+                    const colorIndex = (i / 3) * 3;
+                    colors[colorIndex] = originalColors[colorIndex] * twinkle;
+                    colors[colorIndex + 1] = originalColors[colorIndex + 1] * twinkle;
+                    colors[colorIndex + 2] = originalColors[colorIndex + 2] * twinkle;
+                }
+
+                starField.geometry.attributes.color.needsUpdate = true;
             }
         });
-    });
+    }
 
-    // Star twinkling animation - individual star brightness variation
-    stars.forEach(starField => {
-        if (starField.visible && starField.geometry.userData.originalColors) {
-            const positions = starField.geometry.attributes.position.array;
-            const colors = starField.geometry.attributes.color.array;
-            const originalColors = starField.geometry.userData.originalColors;
+    // Tree wind animation - reduced frequency for better performance
+    if (frameCount % 4 === 0) { // Update every 4th frame instead of 2nd
+        // Cache trigonometric calculations
+        const windTimeZ = time * 0.7;
+        const windTimeX = time * 0.5;
 
-            for (let i = 0; i < positions.length; i += 3) {
-                // Individual twinkling based on position and time with random phase offset
-                const phaseOffset = positions[i] * 0.01 + positions[i + 1] * 0.007 + positions[i + 2] * 0.013;
-                const twinkleSpeed = CONFIG.stars.twinkleSpeedBase + Math.sin(phaseOffset) * CONFIG.stars.twinkleSpeedVariation;
-                const twinkle = Math.sin(time * twinkleSpeed + phaseOffset) * CONFIG.stars.twinkleIntensity + (1 - CONFIG.stars.twinkleIntensity);
+        trees.forEach((tree) => {
+            const windOffset = tree.userData.windOffset;
+            const windStrength = tree.userData.windStrength;
 
-                // Apply twinkling to each color component using original colors
-                const colorIndex = (i / 3) * 3; // Convert position index to color index
-                colors[colorIndex] = originalColors[colorIndex] * twinkle;         // R
-                colors[colorIndex + 1] = originalColors[colorIndex + 1] * twinkle; // G
-                colors[colorIndex + 2] = originalColors[colorIndex + 2] * twinkle; // B
+            // Base swaying motion with individual variation (using cached calculations)
+            tree.rotation.z = Math.sin(windTimeZ + windOffset) * 0.015 * windStrength;
+            tree.rotation.x = Math.sin(windTimeX + windOffset) * 0.01 * windStrength;
+
+            // Subtle mouse interaction for trees (only when significant mouse movement)
+            if (!controls.isMouseDown && (Math.abs(mouseX) > 0.01 || Math.abs(mouseY) > 0.01)) {
+                const mouseInfluence = 0.02;
+                const targetRotationY = mouseX * mouseInfluence;
+                const targetRotationX = mouseY * mouseInfluence * 0.5;
+
+                tree.rotation.y += (targetRotationY - tree.rotation.y) * 0.01;
+                tree.rotation.x += (targetRotationX - tree.rotation.x) * 0.01;
             }
 
-            // Update the color attribute
-            starField.geometry.attributes.color.needsUpdate = true;
-        }
-    });
+            // Individual foliage movement - reduced frequency for better performance
+            if (frameCount % 8 === 0) { // Every 8th frame instead of 4th
+                // Cache base foliage time calculations
+                const foliageTimeZ = time * 0.8 + windOffset;
+                const foliageTimeY = time * 0.6 + windOffset;
 
-    trees.forEach((tree, index) => {
-        const windOffset = tree.userData.windOffset;
-        const windStrength = tree.userData.windStrength;
-
-        // Base swaying motion with individual variation
-        tree.rotation.z = Math.sin(time * 0.7 + windOffset) * 0.015 * windStrength;
-        tree.rotation.x = Math.sin(time * 0.5 + windOffset) * 0.01 * windStrength;
-
-        // Subtle mouse interaction for trees (reduced when controls are active)
-        if (!controls.isMouseDown) {
-            const mouseInfluence = 0.02;
-            const targetRotationY = mouseX * mouseInfluence;
-            const targetRotationX = mouseY * mouseInfluence * 0.5;
-
-            tree.rotation.y += (targetRotationY - tree.rotation.y) * 0.01;
-            tree.rotation.x += (targetRotationX - tree.rotation.x) * 0.01;
-        }
-
-        // Individual foliage movement
-        tree.children.forEach((child, childIndex) => {
-            if (child.userData.type === 'foliage') {
-                child.rotation.z = Math.sin(time * 0.8 + windOffset + childIndex) * 0.025;
-                child.rotation.y = Math.sin(time * 0.6 + windOffset + childIndex) * 0.015;
+                tree.children.forEach((child, childIndex) => {
+                    if (child.userData.type === 'foliage') {
+                        child.rotation.z = Math.sin(foliageTimeZ + childIndex) * 0.025;
+                        child.rotation.y = Math.sin(foliageTimeY + childIndex) * 0.015;
+                    }
+                });
             }
         });
-    });
+    }
 
-    // Particle system
-    spawnParticle();
+    // Particle system - further reduced spawn rate for better performance  
+    if (frameCount % 4 === 0) { // Spawn particles every 4th frame instead of 3rd
+        spawnParticle();
+    }
     updateParticles();
 
     // Bird system
