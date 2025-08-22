@@ -27,6 +27,7 @@ mkdir -p dist
 echo "📋 Copying static assets..."
 cp -r assets dist/
 cp LICENSE dist/
+cp src/favicon.svg dist/
 
 # Minify HTML
 echo "🗜️  Minifying HTML..."

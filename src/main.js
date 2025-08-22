@@ -192,6 +192,22 @@ const CONFIG = {
         swaySpeedRange: [0.8, 1.2]
     },
 
+    // Boulder Configuration
+    boulders: {
+        countRange: [8, 15],
+        lowEndCount: [5, 10],
+        highEndCount: [10, 20],
+        spawnDistanceRange: [80, 900],
+        minDistanceFromTrees: 30,
+        minDistanceFromBoulders: 40,
+        scaleRange: [2, 8],
+        rotationRange: [0, Math.PI * 2],
+        sinkAmount: 0.3, // How much boulder sinks into ground for natural look
+        irregularityFactor: 1.2, // How irregular the boulder shape should be (0-1)
+        color: 0x666666, // Grey color for boulders
+        collisionRadiusMultiplier: 1.8 // Multiplier for fox collision radius
+    },
+
     // Particle System Configuration
     particles: {
         spawnPositionRange: [-20, 20],
@@ -309,6 +325,7 @@ let mountains = [];
 let clouds = [];
 let birds = [];
 let grassPatches = [];
+let boulders = [];
 let stars = [];
 let sun, moon, hotAirBalloon;
 let floor;
@@ -809,6 +826,9 @@ function updateSceneColors() {
 
         // Update grass colors
         updateGrassColors(colors);
+
+        // Update boulder colors
+        updateBoulderColors();
 
         // Update star visibility
         updateStarVisibility();
@@ -1808,6 +1828,19 @@ function canFoxMoveTo(x, z) {
         }
     }
 
+    // Check boulder collisions
+    for (let boulder of boulders) {
+        const boulderDistance = Math.sqrt(
+            (x - boulder.position.x) ** 2 + (z - boulder.position.z) ** 2
+        );
+        // Use stored base radius with multiplier for larger collision area
+        const baseRadius = boulder.userData.baseRadius || boulder.userData.scale * 4;
+        const collisionRadius = baseRadius * CONFIG.boulders.collisionRadiusMultiplier;
+        if (boulderDistance < collisionRadius) {
+            return false;
+        }
+    }
+
     // Check mountain collisions (basic height check)
     // Only block if terrain is significantly higher than current fox position
     const groundHeight = getGroundHeightAt(x, z);
@@ -2561,6 +2594,165 @@ function createGrassBlade() {
     blade.userData.swayIntensity = Utils.randRange(...CONFIG.grass.swayIntensityRange);
 
     return blade;
+}
+
+/**
+ * Create boulder with natural irregular shape
+ * @param {number} scale - Boulder scale multiplier
+ * @returns {THREE.Mesh} Boulder mesh
+ */
+function createBoulder(scale = 1) {
+    // Create base icosahedron for natural rock shape
+    const radius = Utils.randRange(...CONFIG.boulders.scaleRange) * scale;
+    const detail = getDeviceCapabilities().isLowEnd ? 0 : 1;
+    const geometry = new THREE.IcosahedronGeometry(radius, detail);
+    
+    // Make boulder irregular using noise-based displacement for connected surfaces
+    const vertices = geometry.attributes.position.array;
+    const vertexCount = vertices.length / 3;
+    
+    // Apply more aggressive noise-based displacement for natural rock shapes
+    for (let i = 0; i < vertexCount; i++) {
+        const idx = i * 3;
+        const x = vertices[idx];
+        const y = vertices[idx + 1];
+        const z = vertices[idx + 2];
+        
+        // Calculate distance from center for radial displacement
+        const distance = Math.sqrt(x * x + y * y + z * z);
+        const normalizedX = x / distance;
+        const normalizedY = y / distance;
+        const normalizedZ = z / distance;
+        
+        // Use multiple noise scales for more natural variation
+        const noiseScale1 = 0.08; // Large features
+        const noiseScale2 = 0.2;  // Medium features
+        const noiseScale3 = 0.5;  // Fine details
+        
+        // Create layered 3D-like noise for more complex shapes
+        const noise1a = NoiseUtils.noise2D(x * noiseScale1, y * noiseScale1);
+        const noise1b = NoiseUtils.noise2D(y * noiseScale1, z * noiseScale1);
+        const noise1c = NoiseUtils.noise2D(x * noiseScale1, z * noiseScale1);
+        const largeNoise = (noise1a + noise1b + noise1c) / 3;
+        
+        const noise2a = NoiseUtils.noise2D(x * noiseScale2, y * noiseScale2);
+        const noise2b = NoiseUtils.noise2D(y * noiseScale2, z * noiseScale2);
+        const mediumNoise = (noise2a + noise2b) / 2;
+        
+        const noise3 = NoiseUtils.noise2D(x * noiseScale3, z * noiseScale3);
+        
+        // Combine multiple noise layers for complex boulder shapes
+        const combinedNoise = largeNoise * 0.6 + mediumNoise * 0.3 + noise3 * 0.1;
+        const displacement = (combinedNoise - 0.5) * CONFIG.boulders.irregularityFactor * radius;
+        
+        // Apply displacement along the normal direction
+        const newRadius = Math.max(radius * 0.3, radius + displacement); // Prevent inversion
+        vertices[idx] = normalizedX * newRadius;
+        vertices[idx + 1] = normalizedY * newRadius;
+        vertices[idx + 2] = normalizedZ * newRadius;
+    }
+    
+    geometry.attributes.position.needsUpdate = true;
+    geometry.computeVertexNormals();
+    
+    // Boulder material using config color (removed roughness property)
+    const material = new THREE.MeshLambertMaterial({
+        color: CONFIG.boulders.color
+    });
+    
+    const boulder = new THREE.Mesh(geometry, material);
+    boulder.castShadow = true;
+    boulder.receiveShadow = true;
+    
+    // Random rotation for natural placement
+    boulder.rotation.x = Utils.randRange(...CONFIG.boulders.rotationRange);
+    boulder.rotation.y = Utils.randRange(...CONFIG.boulders.rotationRange);
+    boulder.rotation.z = Utils.randRange(...CONFIG.boulders.rotationRange);
+    
+    boulder.userData.type = 'boulder';
+    boulder.userData.scale = scale;
+    boulder.userData.baseRadius = radius; // Store original radius for collision
+    
+    return boulder;
+}
+
+/**
+ * Create boulder field with collision avoidance
+ */
+function createBoulders() {
+    const { isLowEnd } = getDeviceCapabilities();
+    const boulderCount = isLowEnd ?
+        Utils.randInt(...CONFIG.boulders.lowEndCount) :
+        Utils.randInt(...CONFIG.boulders.highEndCount);
+    
+    const positions = [];
+    
+    for (let i = 0; i < boulderCount; i++) {
+        let validPosition = false;
+        let attempts = 0;
+        let x, z;
+        
+        // Try to find valid position (avoiding trees and other boulders)
+        while (!validPosition && attempts < 50) {
+            const distance = Utils.randRange(...CONFIG.boulders.spawnDistanceRange);
+            const angle = Math.random() * Math.PI * 2;
+            
+            x = Math.cos(angle) * distance;
+            z = Math.sin(angle) * distance;
+            
+            validPosition = true;
+            
+            // Check distance from trees
+            for (const tree of trees) {
+                const treeDistance = Math.sqrt(
+                    (x - tree.position.x) ** 2 + (z - tree.position.z) ** 2
+                );
+                if (treeDistance < CONFIG.boulders.minDistanceFromTrees) {
+                    validPosition = false;
+                    break;
+                }
+            }
+            
+            // Check distance from other boulders
+            if (validPosition) {
+                for (const pos of positions) {
+                    const boulderDistance = Math.sqrt(
+                        (x - pos.x) ** 2 + (z - pos.z) ** 2
+                    );
+                    if (boulderDistance < CONFIG.boulders.minDistanceFromBoulders) {
+                        validPosition = false;
+                        break;
+                    }
+                }
+            }
+            
+            attempts++;
+        }
+        
+        if (validPosition) {
+            const boulder = createBoulder();
+            
+            // Position boulder on terrain
+            const groundHeight = getGroundHeightAt(x, z);
+            boulder.position.set(x, groundHeight - CONFIG.boulders.sinkAmount, z);
+            
+            scene.add(boulder);
+            boulders.push(boulder);
+            positions.push({ x, z });
+        }
+    }
+}
+
+/**
+ * Update boulder colors when theme changes
+ */
+function updateBoulderColors() {
+    boulders.forEach(boulder => {
+        if (boulder.userData.type === 'boulder') {
+            // Use config color for consistency
+            boulder.material.color.setHex(CONFIG.boulders.color);
+        }
+    });
 }
 
 /**
@@ -3469,6 +3661,7 @@ function init() {
     scene.add(hotAirBalloon);
 
     createForest();
+    createBoulders();
     createFox();
 
     // Event listeners
@@ -3866,6 +4059,7 @@ function animate() {
                 trees.forEach(tree => updateTreeColors(tree, currentSeasonColors));
                 updateMountainColors(currentSeasonColors);
                 updateCloudColors(currentSeasonColors);
+                updateBoulderColors();
                 updateTerrainColors(currentSeasonColors);
 
                 // Update text color for contrast

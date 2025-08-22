@@ -5,8 +5,8 @@ The Green Family's interactive website featuring a 3D fox in a procedurally gene
 ## 🌟 Features
 
 - Interactive 3D fox model with animations
-- Procedurally generated terrain with trees, grass, and particles
-- WASD controls for fox movement
+- Procedurally generated terrain with trees, grass, boulders, and particles
+- WASD controls for fox movement with collision detection
 - Mouse/touch controls for camera
 - Light/dark theme toggle
 - Responsive design for mobile and desktop
@@ -42,12 +42,6 @@ For development, serve source files directly:
 ```bash
 npm run dev
 # Serves src/ directory at http://localhost:8000
-```
-
-Alternative development server (if port 8000 is busy):
-```bash
-npm run serve:dev
-# Serves src/ directory at http://localhost:8001
 ```
 
 **Note:** A symlink `src/assets` → `../assets` allows the development server to access assets correctly.
