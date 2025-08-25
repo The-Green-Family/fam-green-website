@@ -234,6 +234,85 @@ body {
     }
 }
 
+/* Responsive controls hint */
+.mobile-controls {
+    display: none;
+}
+
+/* Show mobile controls hint on reasonably-sized touch devices */
+@media (max-width: 768px), (pointer: coarse and max-width: 1280px) {
+    .desktop-controls {
+        display: none;
+    }
+    
+    .mobile-controls {
+        display: inline;
+    }
+}
+
+/* Mobile fox controls */
+.mobile-fox-controls {
+    position: fixed;
+    bottom: 120px;
+    left: 20px;
+    z-index: 1000;
+    display: none; /* Hidden by default, shown via JavaScript for mobile */
+}
+
+.fox-dpad {
+    position: relative;
+    width: 120px;
+    height: 120px;
+}
+
+.fox-btn {
+    position: absolute;
+    width: 36px;
+    height: 36px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 6px;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 14px;
+    font-weight: bold;
+    text-align: center;
+    line-height: 1;
+    cursor: pointer;
+    user-select: none;
+    touch-action: manipulation;
+    transition: all 0.15s ease;
+    backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.fox-btn:hover,
+.fox-btn.pressed {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.5);
+    color: rgba(255, 255, 255, 1);
+    transform: scale(0.95);
+}
+
+.fox-btn-up {
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.fox-btn-left {
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.fox-btn-right {
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
 @media (max-width: 768px) {
     .theme-toggle {
         top: 1rem;

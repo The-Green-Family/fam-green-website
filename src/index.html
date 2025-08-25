@@ -51,7 +51,17 @@ SOFTWARE.
     </button>
 
     <div class="controls-hint">
-        Click and drag to explore • WASD to guide the fox
+        <span class="desktop-controls">Click and drag to explore • WAD to guide the fox</span>
+        <span class="mobile-controls">Touch and drag to explore • Use controls to guide the fox</span>
+    </div>
+
+    <!-- Mobile fox movement controls -->
+    <div class="mobile-fox-controls" id="mobileFoxControls">
+        <div class="fox-dpad">
+            <button class="fox-btn fox-btn-up" data-key="w" aria-label="Move fox forward">▲</button>
+            <button class="fox-btn fox-btn-left" data-key="a" aria-label="Turn fox left">◀</button>
+            <button class="fox-btn fox-btn-right" data-key="d" aria-label="Turn fox right">▶</button>
+        </div>
     </div>
 
     <div class="copyright">
