@@ -1991,6 +1991,70 @@ function calculateTerrainSlope(foxX, foxZ, foxRotationY) {
 }
 
 /**
+ * Setup mobile touch controls for fox movement
+ * Shows virtual D-pad on mobile devices only
+ */
+function setupMobileFoxControls() {
+    const mobileFoxControls = document.getElementById('mobileFoxControls');
+    
+    if (!mobileFoxControls) return;
+    
+    const hasTouchSupport = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    const isReasonablySizedForTouch = window.innerWidth <= 1280;
+    const shouldShowControls = hasTouchSupport && isReasonablySizedForTouch;
+    
+    if (shouldShowControls) {
+        mobileFoxControls.style.display = 'block';
+        
+        const foxButtons = mobileFoxControls.querySelectorAll('.fox-btn');
+        
+        foxButtons.forEach(button => {
+            const key = button.getAttribute('data-key');
+            
+            button.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                foxMovement.keys[key] = true;
+                button.classList.add('pressed');
+            });
+            
+            button.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                foxMovement.keys[key] = false;
+                button.classList.remove('pressed');
+            });
+            
+            button.addEventListener('touchcancel', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                foxMovement.keys[key] = false;
+                button.classList.remove('pressed');
+            });
+            
+            button.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                foxMovement.keys[key] = true;
+                button.classList.add('pressed');
+            });
+            
+            button.addEventListener('mouseup', (e) => {
+                e.preventDefault();
+                foxMovement.keys[key] = false;
+                button.classList.remove('pressed');
+            });
+            
+            button.addEventListener('mouseleave', (e) => {
+                foxMovement.keys[key] = false;
+                button.classList.remove('pressed');
+            });
+        });
+    } else {
+        mobileFoxControls.style.display = 'none';
+    }
+}
+
+/**
  * Update fox terrain tilting with smooth transitions
  * Call this every frame to smoothly adjust fox rotation to match terrain
  * This only handles the visual tilting - ground positioning is handled separately
@@ -2113,7 +2177,7 @@ function updateFoxMovement() {
     if (!foxObject) return;
 
     // Check if user is controlling fox
-    const userControlling = foxMovement.keys.w || foxMovement.keys.a || foxMovement.keys.s || foxMovement.keys.d;
+    const userControlling = foxMovement.keys.w || foxMovement.keys.a || foxMovement.keys.d;
 
     if (userControlling) {
         // User control mode - stop any auto-return and reset camera override
@@ -2128,13 +2192,12 @@ function updateFoxMovement() {
             foxObject.rotation.y -= CONFIG.fox.movement.turnSpeed; // Turn right
         }
 
-        // Handle forward/backward movement (W/S keys)
+        // Handle forward movement (W key)
         let moveForward = 0;
         if (foxMovement.keys.w) moveForward = 1;   // W = forward
-        if (foxMovement.keys.s) moveForward = -1;  // S = backward
 
-        // If only turning (A/D pressed but no W/S), add small forward movement to avoid spinning in place
-        const onlyTurning = (foxMovement.keys.a || foxMovement.keys.d) && !foxMovement.keys.w && !foxMovement.keys.s;
+        // If only turning (A/D pressed but no W), add small forward movement to avoid spinning in place
+        const onlyTurning = (foxMovement.keys.a || foxMovement.keys.d) && !foxMovement.keys.w;
         if (onlyTurning && moveForward === 0) {
             moveForward = CONFIG.fox.turnMovementAmount;
         }
@@ -2155,7 +2218,7 @@ function updateFoxMovement() {
         } else if (isMovingNow) {
             // Check if should switch to run animation (only when moving forward and not near boundary)
             const moveDuration = performance.now() - foxMovement.moveStartTime;
-            const isMovingForward = foxMovement.keys.w && !foxMovement.keys.s;
+            const isMovingForward = foxMovement.keys.w;
 
             // Check distance to boundary
             const shouldSlowDown = shouldFoxSlowDown() && isMovingForward;
@@ -2168,7 +2231,7 @@ function updateFoxMovement() {
         // Apply user movement
         if (foxMovement.isMoving && moveForward !== 0) {
             const moveDuration = performance.now() - foxMovement.moveStartTime;
-            const isMovingForward = foxMovement.keys.w && !foxMovement.keys.s;
+            const isMovingForward = foxMovement.keys.w;
 
             // Check if fox is in the walk zone (between walk boundary and stop boundary)
             const shouldSlowDown = shouldFoxSlowDown() && isMovingForward;
@@ -3983,7 +4046,7 @@ function init() {
     document.addEventListener('mousemove', onMouseMove);
     document.addEventListener('click', onTreeClick);
 
-    // Fox movement controls (WASD + number keys for manual animation)
+    // Fox movement controls (WAD keys for manual animation)
     document.addEventListener('keydown', (event) => {
         switch (event.key.toLowerCase()) {
             case 'w':
@@ -3991,9 +4054,6 @@ function init() {
                 break;
             case 'a':
                 foxMovement.keys.a = true;
-                break;
-            case 's':
-                foxMovement.keys.s = true;
                 break;
             case 'd':
                 foxMovement.keys.d = true;
@@ -4009,14 +4069,14 @@ function init() {
             case 'a':
                 foxMovement.keys.a = false;
                 break;
-            case 's':
-                foxMovement.keys.s = false;
-                break;
             case 'd':
                 foxMovement.keys.d = false;
                 break;
         }
     });
+
+    // Mobile fox controls setup
+    setupMobileFoxControls();
 
     // Camera override detection for auto-return
     let isMouseDown = false;
