@@ -603,19 +603,19 @@ const getSeasonalInfo = Utils.createCachedFunction(() => {
     const transitionThreshold = 0.67; // Start blending at 67% through the month
 
     // Northern hemisphere seasons with transition logic
-    if (month >= 2 && month <= 4) { // Spring (Mar-May)
+    if (month >= 2 && month <= 5) { // Spring (Mar-Jun)
         currentSeason = 'spring';
-        if (month === 4 && monthProgress > transitionThreshold) { // Late May
+        if (month === 5 && monthProgress > transitionThreshold) { // Late June
             nextSeason = 'summer';
             blendFactor = (monthProgress - transitionThreshold) / (1 - transitionThreshold);
         }
-    } else if (month >= 5 && month <= 7) { // Summer (Jun-Aug)
+    } else if (month >= 6 && month <= 8) { // Summer (Jul-Sep)
         currentSeason = 'summer';
-        if (month === 7 && monthProgress > transitionThreshold) { // Late August
+        if (month === 8 && monthProgress > transitionThreshold) { // Late September
             nextSeason = 'autumn';
             blendFactor = (monthProgress - transitionThreshold) / (1 - transitionThreshold);
         }
-    } else if (month >= 8 && month <= 10) { // Autumn (Sep-Nov)
+    } else if (month >= 9 && month <= 10) { // Autumn (Oct-Nov)
         currentSeason = 'autumn';
         if (month === 10 && monthProgress > transitionThreshold) { // Late November
             nextSeason = 'winter';
@@ -623,7 +623,7 @@ const getSeasonalInfo = Utils.createCachedFunction(() => {
         }
     } else { // Winter (Dec-Feb)
         currentSeason = 'winter';
-        if (month === 1 && monthProgress > transitionThreshold) { // Late February
+        if (month === 2 && monthProgress > transitionThreshold) { // Late March
             nextSeason = 'spring';
             blendFactor = (monthProgress - transitionThreshold) / (1 - transitionThreshold);
         }
