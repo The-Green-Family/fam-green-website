@@ -30,7 +30,7 @@ A comprehensive Three.js-based 3D forest scene with interactive fox character, d
 function animate() {
 ```
 
-*Source: [main.js:4304](src/main.js#L4304)*
+*Source: [main.js:4364](src/main.js#L4364)*
 
 ---
 
@@ -43,7 +43,7 @@ function animate() {
 function updateCameraFollow() {
 ```
 
-*Source: [main.js:2345](src/main.js#L2345)*
+*Source: [main.js:2408](src/main.js#L2408)*
 
 ---
 
@@ -56,7 +56,7 @@ function updateCameraFollow() {
 function createStars() {
 ```
 
-*Source: [main.js:3146](src/main.js#L3146)*
+*Source: [main.js:3209](src/main.js#L3209)*
 
 ---
 
@@ -69,7 +69,7 @@ function createSun() {
 
 **Returns:** `THREE.Group` - Sun object with glow effect
 
-*Source: [main.js:3203](src/main.js#L3203)*
+*Source: [main.js:3266](src/main.js#L3266)*
 
 ---
 
@@ -82,7 +82,7 @@ function createMoon() {
 
 **Returns:** `THREE.Group` - Moon object with subtle glow
 
-*Source: [main.js:3247](src/main.js#L3247)*
+*Source: [main.js:3310](src/main.js#L3310)*
 
 ---
 
@@ -134,6 +134,17 @@ function getFoxHeightOffset() {
 
 ---
 
+### setupMobileFoxControls
+**Setup mobile touch controls for fox movement Shows virtual D-pad on mobile devices only /**
+
+```javascript
+function setupMobileFoxControls() {
+```
+
+*Source: [main.js:1997](src/main.js#L1997)*
+
+---
+
 ### updateFoxTerrainTilt
 **Update fox terrain tilting with smooth transitions Call this every frame to smoothly adjust fox rotation to match terrain This only handles the visual tilting - ground positioning is handled separately /**
 
@@ -141,7 +152,7 @@ function getFoxHeightOffset() {
 function updateFoxTerrainTilt() {
 ```
 
-*Source: [main.js:1998](src/main.js#L1998)*
+*Source: [main.js:2062](src/main.js#L2062)*
 
 ---
 
@@ -155,7 +166,7 @@ function switchFoxAnimation(animationIndex) {
 **Parameters:**
 - `animationIndex` (`number`) - 0: Survey, 1: Walk, 2: Run
 
-*Source: [main.js:2033](src/main.js#L2033)*
+*Source: [main.js:2097](src/main.js#L2097)*
 
 ---
 
@@ -168,7 +179,7 @@ function shouldFoxSlowDown() {
 
 **Returns:** `boolean` - True if fox should slow down to walking
 
-*Source: [main.js:2063](src/main.js#L2063)*
+*Source: [main.js:2127](src/main.js#L2127)*
 
 ---
 
@@ -179,7 +190,7 @@ function shouldFoxSlowDown() {
 function updateFoxMovement() {
 ```
 
-*Source: [main.js:2112](src/main.js#L2112)*
+*Source: [main.js:2176](src/main.js#L2176)*
 
 ---
 
@@ -190,7 +201,7 @@ function updateFoxMovement() {
 function startFoxReturnAnimation() {
 ```
 
-*Source: [main.js:2334](src/main.js#L2334)*
+*Source: [main.js:2397](src/main.js#L2397)*
 
 ---
 
@@ -229,7 +240,7 @@ function getCachedDeviceCapabilities() {
 function cacheDOMElements() {
 ```
 
-*Source: [main.js:4241](src/main.js#L4241)*
+*Source: [main.js:4301](src/main.js#L4301)*
 
 ---
 
@@ -242,7 +253,7 @@ function getCachedCurrentColors() {
 
 **Returns:** `Object` - Current theme colors
 
-*Source: [main.js:4254](src/main.js#L4254)*
+*Source: [main.js:4314](src/main.js#L4314)*
 
 ---
 
@@ -255,7 +266,7 @@ function getCachedCurrentColors() {
 const NoiseUtils = {
 ```
 
-*Source: [main.js:2373](src/main.js#L2373)*
+*Source: [main.js:2436](src/main.js#L2436)*
 
 ---
 
@@ -340,7 +351,7 @@ function calculateTerrainSlope(foxX, foxZ, foxRotationY) {
 const TerrainUtils = {
 ```
 
-*Source: [main.js:2459](src/main.js#L2459)*
+*Source: [main.js:2522](src/main.js#L2522)*
 
 ---
 
@@ -351,7 +362,7 @@ const TerrainUtils = {
 const MountainUtils = {
 ```
 
-*Source: [main.js:2501](src/main.js#L2501)*
+*Source: [main.js:2564](src/main.js#L2564)*
 
 ---
 
@@ -362,7 +373,7 @@ const MountainUtils = {
 function createGround() {
 ```
 
-*Source: [main.js:2656](src/main.js#L2656)*
+*Source: [main.js:2719](src/main.js#L2719)*
 
 ---
 
@@ -373,7 +384,7 @@ function createGround() {
 function createGrassPatches() {
 ```
 
-*Source: [main.js:2745](src/main.js#L2745)*
+*Source: [main.js:2808](src/main.js#L2808)*
 
 ---
 
@@ -389,7 +400,7 @@ function createBoulder(scale = 1) {
 
 **Returns:** `THREE.Mesh` - Boulder mesh
 
-*Source: [main.js:2857](src/main.js#L2857)*
+*Source: [main.js:2920](src/main.js#L2920)*
 
 ---
 
@@ -400,7 +411,7 @@ function createBoulder(scale = 1) {
 function createBoulders() {
 ```
 
-*Source: [main.js:2936](src/main.js#L2936)*
+*Source: [main.js:2999](src/main.js#L2999)*
 
 ---
 
@@ -417,7 +428,7 @@ function getGroundHeightAt(x, z) {
 
 **Returns:** `number` - Ground height at coordinates
 
-*Source: [main.js:3019](src/main.js#L3019)*
+*Source: [main.js:3082](src/main.js#L3082)*
 
 ---
 
@@ -500,7 +511,7 @@ function applyMountainColors(mountain, colors) {
 - `mountain` (`THREE.Mesh`) - The mountain mesh
 - `colors` (`Object`) - Color palette
 
-*Source: [main.js:2617](src/main.js#L2617)*
+*Source: [main.js:2680](src/main.js#L2680)*
 
 ---
 
@@ -511,7 +522,7 @@ function applyMountainColors(mountain, colors) {
 function updateBoulderColors() {
 ```
 
-*Source: [main.js:3003](src/main.js#L3003)*
+*Source: [main.js:3066](src/main.js#L3066)*
 
 ---
 
@@ -525,7 +536,7 @@ function updateTerrainColors(colors) {
 **Parameters:**
 - `colors` (`Object`) - Current color palette
 
-*Source: [main.js:3096](src/main.js#L3096)*
+*Source: [main.js:3159](src/main.js#L3159)*
 
 ---
 
@@ -639,7 +650,7 @@ function spawnBirdFromTree(tree) {
 **Parameters:**
 - `tree` (`THREE.Group`) - Tree object to spawn birds from
 
-*Source: [main.js:4183](src/main.js#L4183)*
+*Source: [main.js:4243](src/main.js#L4243)*
 
 ---
 
@@ -652,7 +663,7 @@ function calculateFocalTreeCameraPosition() {
 
 **Returns:** `Object` - Camera position and target coordinates
 
-*Source: [main.js:4273](src/main.js#L4273)*
+*Source: [main.js:4333](src/main.js#L4333)*
 
 ---
 
@@ -726,7 +737,7 @@ noise2D(x, y, scale = 1) {
 
 **Returns:** `number` - Noise value between 0 and 1
 
-*Source: [main.js:2409](src/main.js#L2409)*
+*Source: [main.js:2472](src/main.js#L2472)*
 
 ---
 
@@ -745,7 +756,7 @@ layeredNoise(x, y, octaves = 4, persistence = 0.5) {
 
 **Returns:** `number` - Layered noise value between 0 and 1
 
-*Source: [main.js:2439](src/main.js#L2439)*
+*Source: [main.js:2502](src/main.js#L2502)*
 
 ---
 
@@ -763,7 +774,7 @@ generateMountainHeight(x, z, scale = 1.0) {
 
 **Returns:** `number` - Mountain height
 
-*Source: [main.js:2509](src/main.js#L2509)*
+*Source: [main.js:2572](src/main.js#L2572)*
 
 ---
 
@@ -776,7 +787,7 @@ generateMountainHeight(x, z, scale = 1.0) {
 function spawnSnowfall() {
 ```
 
-*Source: [main.js:3619](src/main.js#L3619)*
+*Source: [main.js:3682](src/main.js#L3682)*
 
 ---
 
@@ -787,7 +798,7 @@ function spawnSnowfall() {
 function spawnRainfall() {
 ```
 
-*Source: [main.js:3657](src/main.js#L3657)*
+*Source: [main.js:3720](src/main.js#L3720)*
 
 ---
 
@@ -798,7 +809,7 @@ function spawnRainfall() {
 function spawnParticle() {
 ```
 
-*Source: [main.js:3741](src/main.js#L3741)*
+*Source: [main.js:3804](src/main.js#L3804)*
 
 ---
 
@@ -814,7 +825,7 @@ function spawnFallingLeaves(season) {
 **Parameters:**
 - `season` (`string`) - Current season affecting spawn rate
 
-*Source: [main.js:3695](src/main.js#L3695)*
+*Source: [main.js:3758](src/main.js#L3758)*
 
 ---
 
@@ -825,7 +836,7 @@ function spawnFallingLeaves(season) {
 function updateBirds() {
 ```
 
-*Source: [main.js:3771](src/main.js#L3771)*
+*Source: [main.js:3834](src/main.js#L3834)*
 
 ---
 

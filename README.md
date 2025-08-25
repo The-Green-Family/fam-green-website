@@ -6,7 +6,7 @@ The Green Family's interactive website featuring a 3D fox in a procedurally gene
 
 - Interactive 3D fox model with animations
 - Procedurally generated terrain with trees, grass, boulders, and particles
-- WASD controls for fox movement with collision detection
+- WAD controls for fox movement with collision detection
 - Mouse/touch controls for camera
 - Light/dark theme toggle
 - Responsive design for mobile and desktop
@@ -139,7 +139,7 @@ You can deploy the built files to any static hosting provider:
 ## 🎮 Controls
 
 - **Mouse/Touch**: Drag to rotate camera view
-- **WASD Keys**: Guide the fox around the landscape
+- **WAD Keys**: Guide the fox around the landscape (W=forward, A=turn left, D=turn right)
 - **Theme Button**: Toggle between light and dark themes
 
 ## 📱 Browser Support
