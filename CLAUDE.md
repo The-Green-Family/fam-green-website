@@ -67,6 +67,13 @@ The build script performs:
 - **Auto-generated API docs**: `docs/API.md` contains comprehensive function reference
 - **Manual generation**: `npm run docs` - extracts JSDoc comments and generates markdown
 - **Build integration**: Documentation is automatically updated during `npm run build`
+- **CHANGELOG.md**: Manually maintained following [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) format
+
+## Release Process
+1. **Update CHANGELOG.md**: Move items from `[Unreleased]` to a new version section with proper categories (Added, Changed, Fixed, etc.)
+2. **Create PR to main**: The gitflow automation workflow triggers on PR merge to main
+3. **Automated steps**: Workflow creates git tag, GitHub release (using CHANGELOG.md content), and version bump PR
+4. **Release notes**: Extracted from CHANGELOG.md for the specific version, ensuring accurate and curated release information
 
 ## Testing
 Always test production builds with `npm run serve` before deployment to ensure minified files work correctly.

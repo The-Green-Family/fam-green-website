@@ -25,7 +25,7 @@ mkdir -p dist
 
 # Copy static assets
 echo "📋 Copying static assets..."
-cp -r assets dist/
+cp -r assets/* assets/.* dist/ 2> /dev/null || true
 cp LICENSE dist/
 cp src/favicon.svg dist/
 
