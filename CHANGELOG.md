@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CHANGELOG.md following Keep a Changelog format for manual release notes
 
 ### Changed
+- Upgraded frontend scripts to use Three.js r181 via import maps for module loading
+- Build pipeline now minifies ES modules to keep dist/ deploy-ready
+- Theme toggle button now displays an “A” badge when automatic mode is active for better clarity
 - Gitflow automation workflow now reads release notes from CHANGELOG.md instead of auto-generating from PRs
 - Updated CLAUDE.md with documentation workflow and changelog management guidelines
 

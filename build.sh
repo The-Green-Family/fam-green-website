@@ -55,6 +55,7 @@ node generate-docs.js
 # Minify JavaScript
 echo "⚡ Minifying JavaScript..."
 $TERSER src/main.js \
+  --module \
   --compress drop_console=true,drop_debugger=true \
   --mangle \
   --output dist/main.js
