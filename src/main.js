@@ -1,3 +1,6 @@
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+
 /**
  * Global Configuration Settings
  * Centralized settings for easy adjustment of scene parameters
@@ -1037,7 +1040,21 @@ function toggleTheme() {
 
     // Update 3D scene colors
     updateSceneColors();
+    updateThemeToggleIndicator();
 }
+
+/**
+ * Update theme toggle indicator state to reflect manual/auto mode
+ */
+function updateThemeToggleIndicator() {
+    cacheDOMElements();
+    if (domElements.themeToggle) {
+        domElements.themeToggle.setAttribute('data-theme-mode', currentTheme);
+    }
+}
+
+// Expose theme toggle for inline button handler
+window.toggleTheme = toggleTheme;
 
 /**
  * Update all scene elements with current color scheme
@@ -1853,12 +1870,15 @@ let cameraFollow = {
     userOverride: false // True when user is manually controlling camera
 };
 
+// Weather state determined at runtime
+let isRainySpringDay = false;
+
 /**
  * Create and add a low poly fox model to the scene with animations
  * Loads fox model with Survey, Walk, and Run animations
  */
 function createFox() {
-    const loader = new THREE.GLTFLoader();
+    const loader = new GLTFLoader();
     loader.load(
         "assets/glb/fox.glb",
         (gltf) => {
@@ -1996,54 +2016,54 @@ function calculateTerrainSlope(foxX, foxZ, foxRotationY) {
  */
 function setupMobileFoxControls() {
     const mobileFoxControls = document.getElementById('mobileFoxControls');
-    
+
     if (!mobileFoxControls) return;
-    
+
     const hasTouchSupport = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
     const isReasonablySizedForTouch = window.innerWidth <= 1280;
     const shouldShowControls = hasTouchSupport && isReasonablySizedForTouch;
-    
+
     if (shouldShowControls) {
         mobileFoxControls.style.display = 'block';
-        
+
         const foxButtons = mobileFoxControls.querySelectorAll('.fox-btn');
-        
+
         foxButtons.forEach(button => {
             const key = button.getAttribute('data-key');
-            
+
             button.addEventListener('touchstart', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 foxMovement.keys[key] = true;
                 button.classList.add('pressed');
             });
-            
+
             button.addEventListener('touchend', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 foxMovement.keys[key] = false;
                 button.classList.remove('pressed');
             });
-            
+
             button.addEventListener('touchcancel', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 foxMovement.keys[key] = false;
                 button.classList.remove('pressed');
             });
-            
+
             button.addEventListener('mousedown', (e) => {
                 e.preventDefault();
                 foxMovement.keys[key] = true;
                 button.classList.add('pressed');
             });
-            
+
             button.addEventListener('mouseup', (e) => {
                 e.preventDefault();
                 foxMovement.keys[key] = false;
                 button.classList.remove('pressed');
             });
-            
+
             button.addEventListener('mouseleave', (e) => {
                 foxMovement.keys[key] = false;
                 button.classList.remove('pressed');
@@ -3987,6 +4007,8 @@ function init() {
 
     // Renderer setup
     renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -4291,6 +4313,7 @@ const domElements = {
     title: null,
     subtitle: null,
     separator: null,
+    themeToggle: null,
     cached: false
 };
 
@@ -4303,6 +4326,7 @@ function cacheDOMElements() {
         domElements.title = document.querySelector('.title');
         domElements.subtitle = document.querySelector('.subtitle');
         domElements.separator = document.querySelector('.title-separator');
+        domElements.themeToggle = document.getElementById('themeToggleButton');
         domElements.cached = true;
     }
 }
@@ -4647,6 +4671,7 @@ function checkReducedMotion() {
 // Initialize when page loads
 window.addEventListener('load', () => {
     init();
+    updateThemeToggleIndicator();
     if (!checkReducedMotion()) {
         animate();
     } else {

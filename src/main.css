@@ -200,6 +200,31 @@ body {
     flex-shrink: 0;
 }
 
+.theme-toggle-auto {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -40%);
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: #ffffff;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    opacity: 0;
+    pointer-events: none;
+    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.theme-toggle[data-theme-mode="auto"] .theme-toggle-auto {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+}
+
+.theme-toggle[data-theme-mode="auto"] .theme-icon {
+    opacity: 0.3;
+}
+
 .controls-hint {
     position: fixed;
     bottom: 2rem;
