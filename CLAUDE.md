@@ -34,7 +34,8 @@ npm run docs     # Generate API documentation manually
 ### Key Functions & Performance Areas
 - `getDeviceCapabilities()` - Device detection for performance optimization
 - Three.js scene management and rendering
-- WASD movement controls with collision detection
+- WAD movement controls with collision detection
+- Joystick-style mobile control overlay with instructional prompts
 - Procedural terrain generation
 - Mobile/touch responsive controls
 
@@ -68,6 +69,7 @@ The build script performs:
 - **Manual generation**: `npm run docs` - extracts JSDoc comments and generates markdown
 - **Build integration**: Documentation is automatically updated during `npm run build`
 - **CHANGELOG.md**: Manually maintained following [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) format
+- **README.md**: Keep control instructions (WAD keyboard controls plus joystick) and dependency notes current with new features
 
 ## Release Process
 1. **Update CHANGELOG.md**: Move items from `[Unreleased]` to a new version section with proper categories (Added, Changed, Fixed, etc.)
