@@ -36,7 +36,7 @@ SOFTWARE.
     <div id="world"></div>
 
     <div class="content">
-        <div class="title-container">
+        <div class="title-container is-visible">
             <h1 class="title">The Green Family</h1>
             <div class="title-separator"></div>
             <p class="subtitle">Fortis et Benignus</p>
@@ -53,15 +53,15 @@ SOFTWARE.
 
     <div class="controls-hint">
         <span class="desktop-controls">Click and drag to explore • WAD to guide the fox</span>
-        <span class="mobile-controls">Touch and drag to explore • Use controls to guide the fox</span>
+        <span class="mobile-controls">Drag with one finger to look around • Pinch to zoom • Joystick guides the fox</span>
     </div>
 
     <!-- Mobile fox movement controls -->
     <div class="mobile-fox-controls" id="mobileFoxControls">
-        <div class="fox-dpad">
-            <button class="fox-btn fox-btn-up" data-key="w" aria-label="Move fox forward">▲</button>
-            <button class="fox-btn fox-btn-left" data-key="a" aria-label="Turn fox left">◀</button>
-            <button class="fox-btn fox-btn-right" data-key="d" aria-label="Turn fox right">▶</button>
+        <div class="fox-joystick" aria-label="Drag to guide the fox">
+            <div class="fox-joystick-base">
+                <div class="fox-joystick-handle"></div>
+            </div>
         </div>
     </div>
 
