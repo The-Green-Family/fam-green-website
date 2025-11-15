@@ -7,6 +7,7 @@ The Green Family's interactive website featuring a 3D fox in a procedurally gene
 - Interactive 3D fox model with animations
 - Procedurally generated terrain with trees, grass, boulders, and particles
 - WAD controls for fox movement with collision detection
+- Joystick-style mobile fox controls with on-screen guidance
 - Mouse/touch controls for camera
 - Light/dark theme toggle
 - Responsive design for mobile and desktop
@@ -95,24 +96,29 @@ This project uses Gitflow with automated version management:
 
 ### Branch Structure
 - `main`: Production branch (tagged releases)
-- `develop`: Development branch (latest features)  
+- `develop`: Development branch (latest features)
 - `feature/*`: Feature branches (created from develop)
 
 ### Workflow Process
 1. Create feature branches from `develop`
 2. Merge completed features into `develop`
-3. When ready for release, create PR from `develop` → `main`
-4. When PR is merged, automation triggers:
+3. Update `CHANGELOG.md`:
+   - Move items from `[Unreleased]` section to a new version section
+   - Use categories: `Added`, `Changed`, `Fixed`, `Deprecated`, `Removed`, `Security`
+   - Add release date in format `[X.Y.Z] - YYYY-MM-DD`
+4. Create PR from `develop` → `main`
+5. When PR is merged, automation triggers:
    - Tags `main` with current version (e.g., `v1.0.0`)
-   - Creates version bump feature branch
-   - Merges `main` back into develop  
+   - Creates GitHub Release using CHANGELOG.md content
+   - Merges `main` back into `develop`
    - Increments version in `package.json`
    - Creates PR for version bump review
 
 ### Version Management
-- Versions follow semantic versioning (MAJOR.MINOR.PATCH)
+- Versions follow [Semantic Versioning](https://semver.org/) (MAJOR.MINOR.PATCH)
 - Patch versions auto-increment after each release
 - Current version defined in `package.json`
+- Release notes maintained in `CHANGELOG.md` following [Keep a Changelog](https://keepachangelog.com/)
 
 ## 🌍 Deployment
 
@@ -140,12 +146,13 @@ You can deploy the built files to any static hosting provider:
 
 - **Mouse/Touch**: Drag to rotate camera view
 - **WAD Keys**: Guide the fox around the landscape (W=forward, A=turn left, D=turn right)
-- **Theme Button**: Toggle between light and dark themes
+- **On-Screen Joystick**: Tap-and-drag joystick or follow touch instructions on mobile to move the fox without a hardware keyboard
+- **Theme Button**: Toggle between light and dark themes; automatic mode displays an “A” badge
 
 ## 📱 Browser Support
 
 - Modern browsers with WebGL support
-- Three.js r128 compatibility
+- Three.js r181 compatibility (via import maps)
 - Mobile responsive design
 - Touch controls for mobile devices
 

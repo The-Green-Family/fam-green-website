@@ -1,3 +1,6 @@
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+
 /**
  * Global Configuration Settings
  * Centralized settings for easy adjustment of scene parameters
@@ -1037,7 +1040,21 @@ function toggleTheme() {
 
     // Update 3D scene colors
     updateSceneColors();
+    updateThemeToggleIndicator();
 }
+
+/**
+ * Update theme toggle indicator state to reflect manual/auto mode
+ */
+function updateThemeToggleIndicator() {
+    cacheDOMElements();
+    if (domElements.themeToggle) {
+        domElements.themeToggle.setAttribute('data-theme-mode', currentTheme);
+    }
+}
+
+// Expose theme toggle for inline button handler
+window.toggleTheme = toggleTheme;
 
 /**
  * Update all scene elements with current color scheme
@@ -1844,7 +1861,12 @@ let foxMovement = {
     moveStartTime: 0,
     direction: { x: 0, z: 0 },
     currentTiltX: 0,  // Current tilt around X axis (pitch - up/down hills)
-    currentTiltZ: 0   // Current tilt around Z axis (roll - side slopes)
+    currentTiltZ: 0,  // Current tilt around Z axis (roll - side slopes)
+    joystick: {
+        active: false,
+        forward: 0,
+        turn: 0
+    }
 };
 
 // Camera following runtime state
@@ -1853,12 +1875,16 @@ let cameraFollow = {
     userOverride: false // True when user is manually controlling camera
 };
 
+// Weather state determined at runtime
+let isRainySpringDay = false;
+let isTitleContentHidden = false;
+
 /**
  * Create and add a low poly fox model to the scene with animations
  * Loads fox model with Survey, Walk, and Run animations
  */
 function createFox() {
-    const loader = new THREE.GLTFLoader();
+    const loader = new GLTFLoader();
     loader.load(
         "assets/glb/fox.glb",
         (gltf) => {
@@ -1992,66 +2018,124 @@ function calculateTerrainSlope(foxX, foxZ, foxRotationY) {
 
 /**
  * Setup mobile touch controls for fox movement
- * Shows virtual D-pad on mobile devices only
+ * Shows a joystick on mobile devices to control rotation + forward speed
  */
 function setupMobileFoxControls() {
     const mobileFoxControls = document.getElementById('mobileFoxControls');
-    
+
     if (!mobileFoxControls) return;
-    
+
     const hasTouchSupport = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
     const isReasonablySizedForTouch = window.innerWidth <= 1280;
     const shouldShowControls = hasTouchSupport && isReasonablySizedForTouch;
-    
-    if (shouldShowControls) {
-        mobileFoxControls.style.display = 'block';
-        
-        const foxButtons = mobileFoxControls.querySelectorAll('.fox-btn');
-        
-        foxButtons.forEach(button => {
-            const key = button.getAttribute('data-key');
-            
-            button.addEventListener('touchstart', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                foxMovement.keys[key] = true;
-                button.classList.add('pressed');
-            });
-            
-            button.addEventListener('touchend', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                foxMovement.keys[key] = false;
-                button.classList.remove('pressed');
-            });
-            
-            button.addEventListener('touchcancel', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                foxMovement.keys[key] = false;
-                button.classList.remove('pressed');
-            });
-            
-            button.addEventListener('mousedown', (e) => {
-                e.preventDefault();
-                foxMovement.keys[key] = true;
-                button.classList.add('pressed');
-            });
-            
-            button.addEventListener('mouseup', (e) => {
-                e.preventDefault();
-                foxMovement.keys[key] = false;
-                button.classList.remove('pressed');
-            });
-            
-            button.addEventListener('mouseleave', (e) => {
-                foxMovement.keys[key] = false;
-                button.classList.remove('pressed');
-            });
-        });
-    } else {
+
+    const resetJoystickState = () => {
+        foxMovement.joystick.active = false;
+        foxMovement.joystick.forward = 0;
+        foxMovement.joystick.turn = 0;
+        mobileFoxControls.classList.remove('joystick-active');
+    };
+
+    const updateTouchHintVisibility = (visible) => {
+        if (document.body) {
+            document.body.classList.toggle('mobile-joystick-visible', visible);
+        }
+    };
+
+    if (!shouldShowControls) {
         mobileFoxControls.style.display = 'none';
+        resetJoystickState();
+        updateTouchHintVisibility(false);
+        return;
     }
+
+    mobileFoxControls.style.display = 'block';
+    updateTouchHintVisibility(true);
+
+    const joystickBase = mobileFoxControls.querySelector('.fox-joystick-base');
+    const joystickHandle = mobileFoxControls.querySelector('.fox-joystick-handle');
+
+    if (!joystickBase || !joystickHandle) return;
+
+    const joystickState = {
+        pointerId: null
+    };
+
+    const setHandlePosition = (x, y) => {
+        joystickHandle.style.transform = `translate(-50%, -50%) translate(${x}px, ${y}px)`;
+    };
+
+    const applyJoystickInput = (clientX, clientY) => {
+        const baseRect = joystickBase.getBoundingClientRect();
+        const handleSize = joystickHandle.getBoundingClientRect().width;
+        const maxDistance = Math.max((baseRect.width - handleSize) / 2, 12);
+        const centerX = baseRect.left + baseRect.width / 2;
+        const centerY = baseRect.top + baseRect.height / 2;
+
+        const dx = clientX - centerX;
+        const dy = clientY - centerY;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        let clampedX = dx;
+        let clampedY = dy;
+
+        if (distance > maxDistance) {
+            const angle = Math.atan2(dy, dx);
+            clampedX = Math.cos(angle) * maxDistance;
+            clampedY = Math.sin(angle) * maxDistance;
+        }
+
+        setHandlePosition(clampedX, clampedY);
+
+        const normalizedX = clampedX / maxDistance;
+        const normalizedY = clampedY / maxDistance;
+        const deadZone = 0.1;
+
+        const turnInput = Math.abs(normalizedX) > deadZone ? -normalizedX : 0;
+        const forwardInputRaw = Math.max(0, -normalizedY); // Only allow forward (upwards drag)
+        const forwardInput = forwardInputRaw > deadZone ? forwardInputRaw : 0;
+
+        foxMovement.joystick.turn = turnInput;
+        foxMovement.joystick.forward = forwardInput;
+        foxMovement.joystick.active = turnInput !== 0 || forwardInput !== 0;
+
+        mobileFoxControls.classList.toggle('joystick-active', foxMovement.joystick.active);
+    };
+
+    const stopJoystick = (event) => {
+        if (event && joystickState.pointerId !== event.pointerId) return;
+        if (joystickState.pointerId !== null) {
+            try {
+                joystickBase.releasePointerCapture(joystickState.pointerId);
+            } catch (error) {
+                // Ignore browsers that may throw if capture already released
+            }
+        }
+        joystickState.pointerId = null;
+        setHandlePosition(0, 0);
+        resetJoystickState();
+        window.removeEventListener('pointermove', handlePointerMove);
+        window.removeEventListener('pointerup', stopJoystick);
+        window.removeEventListener('pointercancel', stopJoystick);
+    };
+
+    const handlePointerMove = (event) => {
+        if (joystickState.pointerId !== event.pointerId) return;
+        event.preventDefault();
+        applyJoystickInput(event.clientX, event.clientY);
+    };
+
+    const startJoystick = (event) => {
+        event.preventDefault();
+        joystickState.pointerId = event.pointerId;
+        joystickBase.setPointerCapture(event.pointerId);
+        applyJoystickInput(event.clientX, event.clientY);
+        window.addEventListener('pointermove', handlePointerMove, { passive: false });
+        window.addEventListener('pointerup', stopJoystick);
+        window.addEventListener('pointercancel', stopJoystick);
+    };
+
+    joystickBase.addEventListener('pointerdown', startJoystick, { passive: false });
 }
 
 /**
@@ -2177,7 +2261,11 @@ function updateFoxMovement() {
     if (!foxObject) return;
 
     // Check if user is controlling fox
-    const userControlling = foxMovement.keys.w || foxMovement.keys.a || foxMovement.keys.d;
+    const joystickActive = foxMovement.joystick.active;
+    const userControlling = joystickActive ||
+        foxMovement.keys.w ||
+        foxMovement.keys.a ||
+        foxMovement.keys.d;
 
     if (userControlling) {
         // User control mode - stop any auto-return and reset camera override
@@ -2185,19 +2273,22 @@ function updateFoxMovement() {
         cameraFollow.userOverride = false;
 
         // Handle turning (A/D keys rotate the fox)
-        if (foxMovement.keys.a) {
-            foxObject.rotation.y += CONFIG.fox.movement.turnSpeed; // Turn left
-        }
-        if (foxMovement.keys.d) {
-            foxObject.rotation.y -= CONFIG.fox.movement.turnSpeed; // Turn right
+        const turnInput = joystickActive
+            ? foxMovement.joystick.turn
+            : (foxMovement.keys.a ? 1 : 0) + (foxMovement.keys.d ? -1 : 0);
+        if (turnInput !== 0) {
+            foxObject.rotation.y += CONFIG.fox.movement.turnSpeed * turnInput;
         }
 
         // Handle forward movement (W key)
-        let moveForward = 0;
-        if (foxMovement.keys.w) moveForward = 1;   // W = forward
+        const forwardInput = joystickActive
+            ? foxMovement.joystick.forward
+            : (foxMovement.keys.w ? 1 : 0);
+        const forwardIntentActive = joystickActive ? forwardInput > 0.1 : foxMovement.keys.w;
+        let moveForward = forwardInput;
 
         // If only turning (A/D pressed but no W), add small forward movement to avoid spinning in place
-        const onlyTurning = (foxMovement.keys.a || foxMovement.keys.d) && !foxMovement.keys.w;
+        const onlyTurning = Math.abs(turnInput) > 0 && moveForward === 0;
         if (onlyTurning && moveForward === 0) {
             moveForward = CONFIG.fox.turnMovementAmount;
         }
@@ -2211,6 +2302,7 @@ function updateFoxMovement() {
             foxMovement.moveStartTime = performance.now();
             switchFoxAnimation(1); // Walk
             cameraFollow.enabled = true;
+            hideTitleContent();
         } else if (!isMovingNow && foxMovement.isMoving) {
             // Stop user movement - start auto-return
             foxMovement.isMoving = false;
@@ -2218,7 +2310,7 @@ function updateFoxMovement() {
         } else if (isMovingNow) {
             // Check if should switch to run animation (only when moving forward and not near boundary)
             const moveDuration = performance.now() - foxMovement.moveStartTime;
-            const isMovingForward = foxMovement.keys.w;
+            const isMovingForward = forwardIntentActive;
 
             // Check distance to boundary
             const shouldSlowDown = shouldFoxSlowDown() && isMovingForward;
@@ -2231,7 +2323,7 @@ function updateFoxMovement() {
         // Apply user movement
         if (foxMovement.isMoving && moveForward !== 0) {
             const moveDuration = performance.now() - foxMovement.moveStartTime;
-            const isMovingForward = foxMovement.keys.w;
+            const isMovingForward = forwardIntentActive;
 
             // Check if fox is in the walk zone (between walk boundary and stop boundary)
             const shouldSlowDown = shouldFoxSlowDown() && isMovingForward;
@@ -2285,6 +2377,7 @@ function startAutoReturn() {
     foxMovement.isMoving = true;
     foxMovement.moveStartTime = performance.now();
     switchFoxAnimation(1); // Walk
+    hideTitleContent();
 
     // Keep camera following during auto-return (can be interrupted by user drag)
     cameraFollow.enabled = true;
@@ -2305,6 +2398,7 @@ function updateAutoReturn() {
         foxMovement.isReturning = false;
         foxMovement.isMoving = false;
         switchFoxAnimation(0); // Survey
+        showTitleContent();
 
         // Reset camera following state
         cameraFollow.enabled = false;
@@ -3987,6 +4081,8 @@ function init() {
 
     // Renderer setup
     renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -4288,9 +4384,11 @@ let frameInterval = 1000 / frameRateLimit;
 
 // Cache DOM elements for better performance
 const domElements = {
+    titleContainer: null,
     title: null,
     subtitle: null,
     separator: null,
+    themeToggle: null,
     cached: false
 };
 
@@ -4300,11 +4398,40 @@ const domElements = {
  */
 function cacheDOMElements() {
     if (!domElements.cached) {
+        domElements.titleContainer = document.querySelector('.title-container');
         domElements.title = document.querySelector('.title');
         domElements.subtitle = document.querySelector('.subtitle');
         domElements.separator = document.querySelector('.title-separator');
+        domElements.themeToggle = document.getElementById('themeToggleButton');
         domElements.cached = true;
     }
+}
+
+function getTitleContainerElement() {
+    cacheDOMElements();
+    return domElements.titleContainer;
+}
+
+function hideTitleContent() {
+    const container = getTitleContainerElement();
+    if (!container || isTitleContentHidden) return;
+
+    container.classList.remove('is-visible');
+    // Force reflow to ensure the fade-out animation starts from the current frame
+    void container.offsetWidth;
+    container.classList.add('is-hidden');
+    isTitleContentHidden = true;
+}
+
+function showTitleContent() {
+    const container = getTitleContainerElement();
+    if (!container || !isTitleContentHidden) return;
+
+    container.classList.remove('is-hidden');
+    // Restart intro animation for consistent re-entry effect
+    void container.offsetWidth;
+    container.classList.add('is-visible');
+    isTitleContentHidden = false;
 }
 
 /**
@@ -4647,6 +4774,7 @@ function checkReducedMotion() {
 // Initialize when page loads
 window.addEventListener('load', () => {
     init();
+    updateThemeToggleIndicator();
     if (!checkReducedMotion()) {
         animate();
     } else {

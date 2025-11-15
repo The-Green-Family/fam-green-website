@@ -25,7 +25,7 @@ mkdir -p dist
 
 # Copy static assets
 echo "📋 Copying static assets..."
-cp -r assets dist/
+cp -r assets/* assets/.* dist/ 2> /dev/null || true
 cp LICENSE dist/
 cp src/favicon.svg dist/
 
@@ -55,6 +55,7 @@ node generate-docs.js
 # Minify JavaScript
 echo "⚡ Minifying JavaScript..."
 $TERSER src/main.js \
+  --module \
   --compress drop_console=true,drop_debugger=true \
   --mangle \
   --output dist/main.js
