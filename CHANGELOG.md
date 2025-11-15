@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - CHANGELOG.md following Keep a Changelog format for manual release notes
+- Joystick-style mobile fox controls with descriptive touch instructions and API/docs updates
 
 ### Changed
 - Upgraded frontend scripts to use Three.js r181 via import maps for module loading
@@ -16,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Theme toggle button now displays an “A” badge when automatic mode is active for better clarity
 - Gitflow automation workflow now reads release notes from CHANGELOG.md instead of auto-generating from PRs
 - Updated CLAUDE.md with documentation workflow and changelog management guidelines
+- Desktop hero title now fades away as the fox moves and gracefully reappears when it returns home, keeping focus on the scene
 
 ## [1.0.4] - 2025-08-25
 
