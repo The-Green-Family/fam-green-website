@@ -95,24 +95,29 @@ This project uses Gitflow with automated version management:
 
 ### Branch Structure
 - `main`: Production branch (tagged releases)
-- `develop`: Development branch (latest features)  
+- `develop`: Development branch (latest features)
 - `feature/*`: Feature branches (created from develop)
 
 ### Workflow Process
 1. Create feature branches from `develop`
 2. Merge completed features into `develop`
-3. When ready for release, create PR from `develop` → `main`
-4. When PR is merged, automation triggers:
+3. Update `CHANGELOG.md`:
+   - Move items from `[Unreleased]` section to a new version section
+   - Use categories: `Added`, `Changed`, `Fixed`, `Deprecated`, `Removed`, `Security`
+   - Add release date in format `[X.Y.Z] - YYYY-MM-DD`
+4. Create PR from `develop` → `main`
+5. When PR is merged, automation triggers:
    - Tags `main` with current version (e.g., `v1.0.0`)
-   - Creates version bump feature branch
-   - Merges `main` back into develop  
+   - Creates GitHub Release using CHANGELOG.md content
+   - Merges `main` back into `develop`
    - Increments version in `package.json`
    - Creates PR for version bump review
 
 ### Version Management
-- Versions follow semantic versioning (MAJOR.MINOR.PATCH)
+- Versions follow [Semantic Versioning](https://semver.org/) (MAJOR.MINOR.PATCH)
 - Patch versions auto-increment after each release
 - Current version defined in `package.json`
+- Release notes maintained in `CHANGELOG.md` following [Keep a Changelog](https://keepachangelog.com/)
 
 ## 🌍 Deployment
 

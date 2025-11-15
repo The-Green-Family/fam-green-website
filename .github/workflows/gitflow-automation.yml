@@ -82,104 +82,30 @@ jobs:
           
           git push origin "$BRANCH_NAME"
 
-      - name: Generate changelog for release
+      - name: Extract changelog for current version
         id: changelog
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const previousTag = '${{ steps.previous_tag.outputs.previous_tag }}';
-            const currentTag = 'v${{ steps.get_version.outputs.current_version }}';
-            
-            let query;
-            if (previousTag && previousTag !== '') {
-              // Get the date of the previous tag
-              const { data: tagRef } = await github.rest.git.getRef({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                ref: `tags/${previousTag}`
-              });
-              
-              let commitSha;
-              if (tagRef.object.type === 'tag') {
-                // Annotated tag - get the tag object first, then the commit
-                const { data: tagObject } = await github.rest.git.getTag({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  tag_sha: tagRef.object.sha
-                });
-                commitSha = tagObject.object.sha;
-              } else {
-                // Lightweight tag - points directly to commit
-                commitSha = tagRef.object.sha;
-              }
-              
-              // Get the commit to extract the date
-              const { data: commitData } = await github.rest.repos.getCommit({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                ref: commitSha
-              });
-              
-              const tagDate = commitData.commit.committer.date;
-              query = `repo:${context.repo.owner}/${context.repo.repo} is:pr is:merged merged:>=${tagDate}`;
-            } else {
-              // Get all merged PRs (limited to 100)
-              query = `repo:${context.repo.owner}/${context.repo.repo} is:pr is:merged`;
-            }
-            
-            const { data: prs } = await github.rest.search.issuesAndPullRequests({
-              q: query,
-              sort: 'updated',
-              order: 'desc',
-              per_page: 100
-            });
-            
-            let changelog = '';
-            if (prs.items.length === 0) {
-              changelog = 'No pull requests found since the last release.';
-            } else {
-              // Filter and deduplicate PRs
-              const filteredPrs = prs.items.filter(pr => {
-                // Skip version bump PRs created by automation
-                if (pr.user.login === 'github-actions[bot]' && pr.title.includes('Bump version')) {
-                  return false;
-                }
-                
-                // Skip PRs with version bump pattern in title
-                if (pr.title.match(/🔖\s*Bump version|bump version/i)) {
-                  return false;
-                }
-                
-                return true;
-              });
-              
-              // Group by feature title to remove duplicates (feature->develop, develop->main)
-              const seenTitles = new Set();
-              const uniquePrs = filteredPrs.filter(pr => {
-                // Extract base title without branch info
-                const baseTitle = pr.title.replace(/\s*\(.*?\)$/, '').trim();
-                
-                if (seenTitles.has(baseTitle)) {
-                  return false;
-                }
-                seenTitles.add(baseTitle);
-                return true;
-              });
-              
-              if (uniquePrs.length === 0) {
-                changelog = 'No significant changes since the last release.';
-              } else {
-                changelog = uniquePrs
-                  .map(pr => `- ${pr.title} (#${pr.number}) by @${pr.user.login}`)
-                  .join('\n');
-              }
-            }
-            
-            // Set output for use in next step
-            const fs = require('fs');
-            fs.writeFileSync(process.env.GITHUB_ENV, `CHANGELOG<<EOF\n${changelog}\nEOF\n`, { flag: 'a' });
-            
-            return changelog;
+        run: |
+          VERSION="${{ steps.get_version.outputs.current_version }}"
+
+          # Extract the section for this version from CHANGELOG.md
+          # This reads from the version header until the next version header or end of file
+          CHANGELOG=$(awk -v version="$VERSION" '
+            $0 ~ "^## \\[" version "\\]" { found=1; next }
+            found && /^## \[/ { exit }
+            found { print }
+          ' CHANGELOG.md | head -c 4000)
+
+          if [ -z "$CHANGELOG" ]; then
+            echo "Warning: No changelog entry found for version $VERSION in CHANGELOG.md"
+            CHANGELOG="See CHANGELOG.md for details."
+          fi
+
+          # Set output for use in next step
+          {
+            echo "CHANGELOG<<EOF"
+            echo "$CHANGELOG"
+            echo "EOF"
+          } >> $GITHUB_ENV
 
       - name: Create GitHub Release
         uses: actions/github-script@v7
